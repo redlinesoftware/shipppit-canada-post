@@ -19,19 +19,41 @@ describe CanadaPost::Shipment do
   describe 'rate service' do
     let(:canada_post) { CanadaPost::Shipment.new(canada_post_credentials) }
     let(:simple_package)  { { weight: {value: 2, units: "KG"} } }
-    let(:complex_package) { { weight: {value: 2, units: "KG"}, dimension: {length: 25, width: 15,height: 10, units: "CM"} } }
+    let(:complex_package) { { weight: {value: 2, units: "KG"}, dimension: {length: 25, width: 15, height: 10, units: "CM"} } }
+    let(:mailing_tube) { { cylinder: true, weight: {value: 2, units: "KG"}, dimension: {length: 25, width: 15, height: 10, units: "CM"} } }
     let(:shipper) { { postal_code: "M5X1B8", country_code: "CA" } }
     let(:domestic_recipient) { { postal_code: "M5R1C6", country_code: "CA" } }
     let(:us_recipient) { { postal_code: "10012", country_code: "US", residential: true } }
     let(:intl_recipient) { { country_code: "GB" } }
 
     context 'domestic shipment', :vcr do
-      let(:rates) { canada_post.rate(shipper: shipper, recipient: domestic_recipient, package: simple_package) }
+      let(:rates) {
+        canada_post.rate(shipper: shipper, recipient: domestic_recipient, package: simple_package) }
       it 'does return a rate' do
         expect(rates.first).to be_an_instance_of(CanadaPost::Rate)
       end
-      it 'does return a transit time' do
-        expect(rates.first.transit_time).not_to be_nil
+      it 'does return a cost' do
+        expect(rates.first.total_net_charge).not_to be_nil
+      end
+      it 'does return a service_code' do
+        expect(rates.first.service_code).not_to be_nil
+      end
+      it 'does return expected_transit_time' do
+        expect(rates.first.expected_transit_time).not_to be_nil
+      end
+      it 'does return guaranteed_delivery' do
+        expect(rates.first.guaranteed_delivery).not_to be_nil
+      end
+      it 'does return expected_delivery_date' do
+        expect(rates.first.expected_delivery_date).not_to be_nil
+      end
+    end
+
+    context 'with package options specified', :vcr do
+      let(:rates) {
+        canada_post.rate(shipper: shipper, recipient: domestic_recipient, package: mailing_tube) }
+      it 'does return a rate' do
+        expect(rates.first).to be_an_instance_of(CanadaPost::Rate)
       end
     end
 
@@ -45,7 +67,6 @@ describe CanadaPost::Shipment do
       it 'has a service_type attribute' do
         expect(rates.first.service_type).to eq("Regular Parcel")
       end
-
     end
 
     context 'with no service type specified', :vcr do

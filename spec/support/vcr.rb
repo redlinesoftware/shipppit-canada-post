@@ -5,7 +5,6 @@ VCR.configure do |c|
   c.hook_into :webmock
 end
 
-
 RSpec.configure do |c|
   c.include CanadaPost::Helpers
   c.around(:each, :vcr) do |example|

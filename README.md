@@ -1,5 +1,7 @@
 # CanadaPost REST API V3 Wrapper
 
+[![Build Status](https://semaphoreci.com/api/v1/projects/719f5dd5-e5ff-47f3-a6ff-833ad667ef76/646929/badge.svg)](https://semaphoreci.com/olimart/shipppit-canada-post)
+
 A Ruby wrapper for the CanadaPost REST API. Based extensively off the [fedex](https://github.com/jazminschroeder/fedex) gem.
 Thanks to [jazminschroeder](https://github.com/jazminschroeder) and all contributors who helped make that a gem worth recreating for the Canada Post API
 
@@ -11,7 +13,7 @@ For more info see the [Official Canada Post Developer Docs](https://www.canadapo
 Add this line to your application's Gemfile:
 
 ```ruby
-gem 'canada-post-api'
+gem 'canada-post-api', github: 'shipppit/shipppit-canada-post'
 ```
 
 And then execute:
@@ -67,7 +69,7 @@ package = { weight: { value: 1, units: 'KG' },
 see [Canada Post Rating API docs](https://www.canadapost.ca/cpo/mc/business/productsservices/developers/services/rating/getrates/default.jsf) for service code descriptions
 ```ruby
 $ CanadaPost::Request::Rate::SERVICE_CODES
-$ => ["DOM.RP", "DOM.EP", "DOM.XP", "DOM.XP.CERT", "DOM.PC.CERT", "DOM.PC", "DOM.DT", "DOM.LIB", "USA.EP", "USA.PW.ENV", "USA.PW.PAK", "USA.PW.PARCEL", "USA.SP.AIR", "USA.TP", "USA.TP.LVM", "USA.XP", "INT.XP", "INT.IP.AIR", "INT.IP.SURF", "INT.PW.ENV", "INT.PW.PAK", "INT.PW.PARCEL", "INT.SP.AIR", "INT.SP.SURF", "INT.TP"] 
+$ => ["DOM.RP", "DOM.EP", "DOM.XP", "DOM.XP.CERT", "DOM.PC.CERT", "DOM.PC", "DOM.DT", "DOM.LIB", "USA.EP", "USA.PW.ENV", "USA.PW.PAK", "USA.PW.PARCEL", "USA.SP.AIR", "USA.TP", "USA.TP.LVM", "USA.XP", "INT.XP", "INT.IP.AIR", "INT.IP.SURF", "INT.PW.ENV", "INT.PW.PAK", "INT.PW.PARCEL", "INT.SP.AIR", "INT.SP.SURF", "INT.TP"]
 ```
 
 ## Get Rates:
@@ -82,7 +84,7 @@ Not specifying a service type will return an array of all available rates
 
 ```ruby
 # complete response
-$ [#<CanadaPost::Rate:0x007fd783f42a88 @service_type="Expedited Parcel", @service_code="DOM.EP", @total_net_charge="8.76", @total_base_charge="7.77", @gst_taxes="0.00", @pst_taxes="0.00", @hst_taxes="1.01", @transit_time="1">, #<CanadaPost::Rate:0x007fd783f42a60 @service_type="Priority", @service_code="DOM.PC", @total_net_charge="19.14", @total_base_charge="16.21", @gst_taxes="0.00", @pst_taxes="0.00", @hst_taxes="2.20", @transit_time="1">, #<CanadaPost::Rate:0x007fd783f42a10 @service_type="Regular Parcel", @service_code="DOM.RP", @total_net_charge="8.76", @total_base_charge="7.77", @gst_taxes="0.00", @pst_taxes="0.00", @hst_taxes="1.01", @transit_time="2">, #<CanadaPost::Rate:0x007fd783f429e8 @service_type="Xpresspost", @service_code="DOM.XP", @total_net_charge="11.31", @total_base_charge="9.58", @gst_taxes="0.00", @pst_taxes="0.00", @hst_taxes="1.30", @transit_time="1">] 
+$ [#<CanadaPost::Rate:0x007fd783f42a88 @service_type="Expedited Parcel", @service_code="DOM.EP", @total_net_charge="8.76", @total_base_charge="7.77", @gst_taxes="0.00", @pst_taxes="0.00", @hst_taxes="1.01", @expected_transit_time="1">, #<CanadaPost::Rate:0x007fd783f42a60 @service_type="Priority", @service_code="DOM.PC", @total_net_charge="19.14", @total_base_charge="16.21", @gst_taxes="0.00", @pst_taxes="0.00", @hst_taxes="2.20", @expected_transit_time="1">, #<CanadaPost::Rate:0x007fd783f42a10 @service_type="Regular Parcel", @service_code="DOM.RP", @total_net_charge="8.76", @total_base_charge="7.77", @gst_taxes="0.00", @pst_taxes="0.00", @hst_taxes="1.01", @expected_transit_time="2">, #<CanadaPost::Rate:0x007fd783f429e8 @service_type="Xpresspost", @service_code="DOM.XP", @total_net_charge="11.31", @total_base_charge="9.58", @gst_taxes="0.00", @pst_taxes="0.00", @hst_taxes="1.30", @expected_transit_time="1">]
 ```
 
 Specifying the service type will return one result
@@ -92,18 +94,21 @@ $ service_type = 'DOM.EP'
 $ rates = canada_post_service.rate( shipper: shipper,
                                     recipient: recipient,
                                     package: package,
-                                    service_type: service_type)
+                                    service_type: service_type )
 # complete response
 $ [
-	#<CanadaPost::Rate:0x007fd783fea238 
-		@service_type="Expedited Parcel", 
-		@service_code="DOM.EP", 
-		@total_net_charge="8.76", 
-		@total_base_charge="7.77", 
-		@gst_taxes="0.00", 
-		@pst_taxes="0.00", 
-		@hst_taxes="1.01", 
-		@transit_time="1">
+	#<CanadaPost::Rate:0x007fd783fea238
+		@service_type="Expedited Parcel",
+		@service_code="DOM.EP",
+		@total_net_charge="8.76",
+		@total_base_charge="7.77",
+		@gst_taxes="0.00",
+		@pst_taxes="0.00",
+		@hst_taxes="1.01",
+		@expected_transit_time="1",
+    @expected_delivery_date="2015-12-25",
+    @guaranteed_delivery="false",
+    @am_delivery="false">
   ]
 ```
 
@@ -120,5 +125,6 @@ This is still a work in progress but feel free to contribute if it will benefit 
 1. Fork it ( https://github.com/[my-github-username]/canada-post-api/fork )
 2. Create your feature branch (`git checkout -b my-new-feature`)
 3. Commit your changes (`git commit -am 'Add some feature'`)
-4. Push to the branch (`git push origin my-new-feature`)
-5. Create a new Pull Request
+4. Run test suite `bundle exec rspec spec`
+5. Push to the branch (`git push origin my-new-feature`)
+6. Create a new Pull Request

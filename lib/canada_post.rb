@@ -6,6 +6,6 @@ require "canada_post/rate"
 require "canada_post/credentials"
 
 module CanadaPost
-  #Exceptions: CandaPost::RateError
+  # Exceptions: CandaPost::RateError
   class RateError < StandardError; end
 end

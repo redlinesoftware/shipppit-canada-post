@@ -84,6 +84,9 @@ module CanadaPost
               xml.length @package[:dimensions][:length].round(1)
             }
           end
+          if @package[:cylinder]
+            xml.send(:"mailing-tube", @package[:cylinder])
+          end
         }
       end
 
