@@ -5,7 +5,6 @@ Thanks to [jazminschroeder](https://github.com/jazminschroeder) and all contribu
 
 For more info see the [Official Canada Post Developer Docs](https://www.canadapost.ca/cpotools/apps/drc/home)
 
-Current implementation for the rates endpoint only, feel free to let me know if there are other services you would like to see included or make a PR
 
 ## Installation
 
@@ -76,7 +75,7 @@ $ => ["DOM.RP", "DOM.EP", "DOM.XP", "DOM.XP.CERT", "DOM.PC.CERT", "DOM.PC", "DOM
 ```ruby
 $ rates = canada_post_service.rate( shipper: shipper,
                                     recipient: recipient,
-                                    package: package)
+                                    package: package )
 ```
 
 Not specifying a service type will return an array of all available rates
@@ -115,7 +114,6 @@ $ rates.first.total_net_charge => '8.76' # all monetary values are CAD
 ```
 
 This is still a work in progress but feel free to contribute if it will benefit you!
-
 
 ## Contributing
 
