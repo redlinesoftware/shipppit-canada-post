@@ -1,16 +1,16 @@
 module CanadaPost
   module Request
-    class Rate < Base
+    class Shipment < Base
 
       def process_request
-        api_response = client(rate_url, build_xml, rate_headers)
+        api_response = client(shipment_url, build_xml, shipment_headers)
         response = parse_response(api_response)
 
         if success?(response)
           rate_reply_details = response[:price_quotes][:price_quote] || []
           rate_reply_details = [rate_reply_details] if rate_reply_details.is_a? Hash
           rate_reply_details.map do |rate_reply|
-            CanadaPost::Rate.new(rate_reply)
+            CanadaPost::Shipment.new(rate_reply)
           end
         else
           error_message = if response[:messages]
@@ -18,25 +18,25 @@ module CanadaPost
           else
             'api_response.response'
           end
-          raise RateError, error_message
+          raise ShipmentError, error_message
         end
       end
 
       private
 
-      def rate_url
-        api_url + "/rs/ship/price"
+      def shipment_headers
+        api_url += "rs/{mailed by customer}/{mobo}/shipment"
       end
 
-      def rate_headers
+      def shipment_headers
         {
-          'Content-type' => 'application/vnd.cpc.ship.rate-v3+xml',
-          'Accept'       => 'application/vnd.cpc.ship.rate-v3+xml'
+          'Content-type' => 'application/vnd.cpc.shipment-v7+xml',
+          'Accept'       => 'application/vnd.cpc.shipment-v7+xml'
         }
       end
 
       def build_xml
-        ns = "http://www.canadapost.ca/ws/ship/rate-v3"
+        ns = "http://www.canadapost.ca/ws/shipment-v7"
         builder = Nokogiri::XML::Builder.new do |xml|
           xml.send(:"mailing-scenario", xmlns: ns) {
             add_requested_shipment(xml)

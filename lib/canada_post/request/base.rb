@@ -3,6 +3,7 @@ require 'nokogiri'
 require 'active_support/core_ext/hash'
 require 'canada_post/helpers'
 require 'canada_post/rate'
+require 'canada_post/shipment'
 
 module CanadaPost
   module Request
@@ -64,6 +65,15 @@ module CanadaPost
 
       def process_request
         raise NotImplementedError, "Override #process_request in subclass"
+      end
+
+      # Sends POST request to CanadaPost API and parse the response,
+      # a class object (Shipment, Rate...) is created if the response is successful
+      def client(url, body, headers)
+        self.class.post(url,
+          body: body,
+          headers: headers,
+          basic_auth: @authorization)
       end
 
       def api_url
