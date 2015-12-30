@@ -35,7 +35,7 @@ require 'canada_post'
 Create a service:
 
 ```ruby
-canada_post_service = CanadaPost::Shipment.new( username: 'xxxx',
+canada_post_service = CanadaPost::Client.new( username: 'xxxx',
 									password: 'xxxx',
 									customer_number: 'xxxx',
 									mode: 'development' )
@@ -45,16 +45,14 @@ canada_post_service = CanadaPost::Shipment.new( username: 'xxxx',
 ### Define shipper:
 
 ```ruby
-shipper = { postal_code: 'M5X1B8',
-			country_code: 'CA' }
+shipper = { postal_code: 'M5X1B8', country_code: 'CA' }
 # Post Code is required for US and CA shipments, not for International Shipments
 ```
 
 ### Define recipient:
 
 ```ruby
-recipient = { postal_code: 'M5R1C6',
-			  country_code: 'CA' }
+recipient = { postal_code: 'M5R1C6', country_code: 'CA' }
 ```
 
 ### Define package:
