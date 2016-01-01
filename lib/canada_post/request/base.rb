@@ -3,6 +3,7 @@ require 'nokogiri'
 require 'active_support/core_ext/hash'
 require 'canada_post/helpers'
 require 'canada_post/rate'
+require 'canada_post/shipping'
 
 module CanadaPost
   module Request
@@ -54,13 +55,19 @@ module CanadaPost
       # INT.TP - Tracked Package - International
       SERVICE_CODES = ["DOM.RP", "DOM.EP", "DOM.XP", "DOM.XP.CERT", "DOM.PC.CERT", "DOM.PC", "DOM.DT", "DOM.LIB", "USA.EP", "USA.PW.ENV", "USA.PW.PAK", "USA.PW.PARCEL", "USA.SP.AIR", "USA.TP", "USA.TP.LVM", "USA.XP", "INT.XP", "INT.IP.AIR", "INT.IP.SURF", "INT.PW.ENV", "INT.PW.PAK", "INT.PW.PARCEL", "INT.SP.AIR", "INT.SP.SURF", "INT.TP"]
 
-      def initialize(credentials, options={})
-        requires!(options, :shipper, :recipient, :package)
+      def initialize(credentials, options = {})
         @credentials = credentials
-        @shipper, @recipient, @package, @service_type = options[:shipper], options[:recipient], options[:package], options[:service_type]
-        @authorization = { username: @credentials.username, password: @credentials.password }
+        @authorization = {username: @credentials.username, password: @credentials.password}
         @customer_number = @credentials.customer_number
       end
+
+      # def initialize(credentials, options={})
+      #   requires!(options, :shipper, :recipient, :package)
+      #   @credentials = credentials
+      #   @shipper, @recipient, @package, @service_type = options[:shipper], options[:recipient], options[:package], options[:service_type]
+      #   @authorization = { username: @credentials.username, password: @credentials.password }
+      #   @customer_number = @credentials.customer_number
+      # end
 
       def process_request
         raise NotImplementedError, "Override #process_request in subclass"
@@ -92,7 +99,7 @@ module CanadaPost
 
       # Parse response, convert keys to underscore symbols
       def parse_response(response)
-        response = Hash.from_xml( response.parsed_response.gsub("\n", "") ) if response.parsed_response.is_a? String
+        response = Hash.from_xml(response.parsed_response.gsub("\n", "")) if response.parsed_response.is_a? String
         response = sanitize_response_keys(response)
       end
 
