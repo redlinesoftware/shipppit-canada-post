@@ -1,23 +1,23 @@
 require 'spec_helper'
 require 'canada_post'
-require 'canada_post/shipment'
+require 'canada_post/client'
 
-describe CanadaPost::Shipment do
+describe CanadaPost::Client do
 
   context 'missing required parameters' do
     it 'does raise Rate exception' do
-      expect{ CanadaPost::Shipment.new }.to raise_error(CanadaPost::RateError)
+      expect{ CanadaPost::Client.new }.to raise_error(CanadaPost::RateError)
     end
   end
 
   context 'required parameters present' do
     it 'does create a valid instance' do
-      expect( CanadaPost::Shipment.new(canada_post_credentials) ).to be_an_instance_of(CanadaPost::Shipment)
+      expect( CanadaPost::Client.new(canada_post_credentials) ).to be_an_instance_of(CanadaPost::Client)
     end
   end
 
   describe 'rate service' do
-    let(:canada_post) { CanadaPost::Shipment.new(canada_post_credentials) }
+    let(:canada_post) { CanadaPost::Client.new(canada_post_credentials) }
     let(:simple_package)  { { weight: {value: 2, units: "KG"} } }
     let(:complex_package) { { weight: {value: 2, units: "KG"}, dimension: {length: 25, width: 15, height: 10, units: "CM"} } }
     let(:mailing_tube) { { cylinder: true, weight: {value: 2, units: "KG"}, dimension: {length: 25, width: 15, height: 10, units: "CM"} } }
