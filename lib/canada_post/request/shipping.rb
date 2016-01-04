@@ -7,35 +7,56 @@ module CanadaPost
 
       def initialize(credential, options={})
         @credentials = credential
-        @sender = options[:sender]
-        @destination = options[:destination]
-        @package = options[:package]
-        @notification = options[:notification]
-        @preferences = options[:preferences]
-        @settlement_info = options[:settlement_info]
-        @group_id = options[:group_id]
-        @mailing_date = options[:mailing_date]
-        @contract_id = @credentials.customer_number #options[:contract_id]
-        @service_code = options[:service_code]
+        if options.present?
+          @sender = options[:sender]
+          @destination = options[:destination]
+          @package = options[:package]
+          @notification = options[:notification]
+          @preferences = options[:preferences]
+          @settlement_info = options[:settlement_info]
+          @group_id = options[:group_id]
+          @mailing_date = options[:mailing_date]
+          @contract_id = @credentials.customer_number #options[:contract_id]
+          @service_code = options[:service_code]
+        end
         super(credential)
       end
 
       def process_request
-        shipping_response = {errors: ''}
         api_response = self.class.post(api_url,
                                        body: build_xml,
                                        headers: shipping_header,
                                        basic_auth: @authorization
         )
-        response = parse_response(api_response)
-        if response[:messages].present?
-          response[:messages].each do |key, message|
-            shipping_response[:errors] << message[:description].split('}').last
-          end
-          return shipping_response
-        end
+        process_response(api_response)
+      end
 
-        return response
+      def get_price(shipping_id)
+        price_url = api_url + "/#{shipping_id}/price"
+        api_response = self.class.get(price_url,
+                                      headers: shipping_header,
+                                      basic_auth: @authorization
+        )
+        process_response(api_response)
+      end
+
+      def details(shipping_id)
+        details_url = api_url + "/#{shipping_id}/details"
+        api_response = self.class.get(details_url,
+                                      headers: shipping_header,
+                                      basic_auth: @authorization
+        )
+        process_response(api_response)
+      end
+
+      def get_label(label_url)
+        self.class.get(label_url,
+                       headers: {
+                           'Content-type' => 'application/pdf',
+                           'Accept' => 'application/pdf'
+                       },
+                       basic_auth: @authorization
+        )
       end
 
       private
