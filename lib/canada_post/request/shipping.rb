@@ -32,21 +32,15 @@ module CanadaPost
         shipping_response = process_response(api_response)
         shipment_response[:create_shipping] = shipping_response
         unless shipping_response[:errors].present?
-          shipment_response[:transmit_shipping] = transmit_shipment
+          manifest_params = {
+              destination: @destination,
+              phone: @sender[:phone],
+              group_id: @group_id
+          }
+          manifest_response = CanadaPost::Request::Manifest.new(@credentials, manifest_params).process_request
+          shipment_response[:transmit_shipping] = manifest_response
         end
         shipment_response
-      end
-
-      def transmit_shipment
-        puts "Body XML: #{build_transmit_xml}"
-        api_response = self.class.post(transmit_shipment_url,
-                                       body: build_transmit_xml,
-                                       headers: manifest_header,
-                                       basic_auth: @authorization
-        )
-        puts "Response: #{api_response.inspect}"
-        tres = process_response(api_response)
-        puts "Transmit Shipment: #{tres.inspect}"
       end
 
       def get_price(shipping_id)
@@ -84,11 +78,6 @@ module CanadaPost
         api_url += "/rs/#{@credentials.customer_number}/#{@credentials.customer_number}/shipment"
       end
 
-      def transmit_shipment_url
-        api_url = TEST_URL #@credentials.mode == "production" ? PRODUCTION_URL : TEST_URL
-        api_url += "/rs/#{@credentials.customer_number}/#{@credentials.customer_number}/manifest"
-      end
-
       def shipping_header
         {
             'Content-type' => 'application/vnd.cpc.shipment-v7+xml',
@@ -96,56 +85,14 @@ module CanadaPost
         }
       end
 
-      def manifest_header
-        {
-            'Content-type' => 'application/vnd.cpc.manifest-v7+xml',
-            'Accept' => 'application/vnd.cpc.manifest-v7+xml'
-        }
-      end
-
       def build_xml
         ns = "http://www.canadapost.ca/ws/shipment-v7"
         builder = Nokogiri::XML::Builder.new do |xml|
           xml.send(:"shipment", xmlns: ns) {
-            puts 'Here1'
             add_shipment_params(xml)
           }
         end
         builder.doc.root.to_xml
-      end
-
-      def build_transmit_xml
-        ns = "http://www.canadapost.ca/ws/manifest-v7"
-        xsi = 'http://www.w3.org/2001/XMLSchema-instance'
-        builder = Nokogiri::XML::Builder.new do |xml|
-          xml.send(:"transmit-set", :'xmlns:xsi' => xsi, xmlns: ns) {
-            xml.send(:'group-ids') {
-              xml.send(:'group-id', @group_id)
-            }
-            xml.send(:'detailed-manifests', true)
-            xml.send(:'method-of-payment', 'Account')
-            xml.send(:'manifest-address') {
-              add_manifest_details(xml)
-            }
-          }
-        end
-        builder.doc.root.to_xml
-      end
-
-      def add_manifest_details(xml)
-        xml.send(:'manifest-company', @destination[:company])
-        # xml.send(:'manifest-name', @destination[:name])
-        xml.send(:'phone-number', @sender[:phone])
-        xml.send(:'address-details') {
-          manifest_address(xml, @destination[:address_details])
-        }
-      end
-
-      def manifest_address(xml, params)
-        xml.send(:'address-line-1', params[:address])
-        xml.send(:'city', params[:city])
-        xml.send(:'prov-state', params[:state])
-        xml.send(:'postal-zip-code', params[:zip])
       end
 
       def add_shipment_params(xml)

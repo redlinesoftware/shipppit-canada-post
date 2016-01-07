@@ -1,0 +1,73 @@
+module CanadaPost
+  module Request
+    class Manifest < Base
+      def initialize(credential, options={})
+        @credentials = credential
+        if options.present?
+          @phone = options[:phone]
+          @destination = options[:destination]
+          @group_id = options[:group_id]
+        end
+        super(credential)
+      end
+
+      def process_request
+        api_response = self.class.post(transmit_shipment_url,
+                                       body: build_transmit_xml,
+                                       headers: manifest_header,
+                                       basic_auth: @authorization
+        )
+        process_response(api_response)
+      end
+
+      private
+
+      def api_url
+        api_url = TEST_URL #@credentials.mode == "production" ? PRODUCTION_URL : TEST_URL
+        api_url += "/rs/#{@credentials.customer_number}/#{@credentials.customer_number}/manifest"
+      end
+
+      def manifest_header
+        {
+            'Content-type' => 'application/vnd.cpc.manifest-v7+xml',
+            'Accept' => 'application/vnd.cpc.manifest-v7+xml'
+        }
+      end
+
+      def build_xml
+        ns = "http://www.canadapost.ca/ws/manifest-v7"
+        xsi = 'http://www.w3.org/2001/XMLSchema-instance'
+        builder = Nokogiri::XML::Builder.new do |xml|
+          xml.send(:"transmit-set", :'xmlns:xsi' => xsi, xmlns: ns) {
+            xml.send(:'group-ids') {
+              xml.send(:'group-id', @group_id)
+            }
+            xml.send(:'detailed-manifests', true)
+            xml.send(:'method-of-payment', 'Account')
+            xml.send(:'manifest-address') {
+              add_manifest_details(xml)
+            }
+          }
+        end
+        builder.doc.root.to_xml
+      end
+
+      def add_manifest_details(xml)
+        xml.send(:'manifest-company', @destination[:company])
+        xml.send(:'manifest-name', @destination[:name])
+        xml.send(:'phone-number', @sender[:phone])
+        xml.send(:'address-details') {
+          manifest_address(xml, @destination[:address_details])
+        }
+      end
+
+      def manifest_address(xml, params)
+        xml.send(:'address-line-1', params[:address])
+        xml.send(:'city', params[:city])
+        xml.send(:'prov-state', params[:state])
+        xml.send(:'postal-zip-code', params[:zip])
+      end
+
+    end
+  end
+end
