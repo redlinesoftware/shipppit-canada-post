@@ -1,6 +1,9 @@
 module CanadaPost
   module Request
     class Manifest < Base
+
+      attr_accessor :phone, :destination, :group_id
+
       def initialize(credential, options={})
         @credentials = credential
         if options.present?
@@ -12,12 +15,30 @@ module CanadaPost
       end
 
       def process_request
-        api_response = self.class.post(transmit_shipment_url,
-                                       body: build_transmit_xml,
+        api_response = self.class.post(api_url,
+                                       body: build_xml,
                                        headers: manifest_header,
                                        basic_auth: @authorization
         )
         process_response(api_response)
+      end
+
+      def get_manifest(url)
+        api_response = self.class.get(url,
+                                      headers: manifest_header,
+                                      basic_auth: @authorization
+        )
+        process_response(api_response)
+      end
+
+      def get_artifact(url)
+        self.class.get(url,
+                       headers: {
+                           'Content-type' => 'application/pdf',
+                           'Accept' => 'application/pdf'
+                       },
+                       basic_auth: @authorization
+        )
       end
 
       private
@@ -55,7 +76,7 @@ module CanadaPost
       def add_manifest_details(xml)
         xml.send(:'manifest-company', @destination[:company])
         xml.send(:'manifest-name', @destination[:name])
-        xml.send(:'phone-number', @sender[:phone])
+        xml.send(:'phone-number', @phone)
         xml.send(:'address-details') {
           manifest_address(xml, @destination[:address_details])
         }

@@ -1,3 +1,4 @@
+require 'canada_post/request/manifest'
 module CanadaPost
   module Request
     class Shipping < Base
@@ -16,7 +17,7 @@ module CanadaPost
           @settlement_info = options[:settlement_info]
           @group_id = options[:group_id]
           @mailing_date = options[:mailing_date]
-          @contract_id = @credentials.customer_number #options[:contract_id]
+          @contract_id = @credentials.customer_number
           @service_code = options[:service_code]
         end
         super(credential)
@@ -102,13 +103,11 @@ module CanadaPost
         if @mailing_date.present?
           xml.send(:'expected-mailing-date', @mailing_date)
         end
-        xml.send(:'requested-shipping-point', 'H2B1A0')
-        puts 'Here2'
+        xml.send(:'requested-shipping-point', @sender[:shipping_point])
         # xml.send(:'cpc-pickup-indicator', false)
         xml.send(:'delivery-spec') {
           add_delivery_spec(xml)
         }
-        puts 'Here3'
       end
 
       def add_delivery_spec(xml)
