@@ -2,6 +2,15 @@ module CanadaPost
   module Request
     class Rate < Base
 
+      attr_accessor :shipper, :recipient, :package
+
+      def initialize(credentials, options={})
+        requires!(options, :shipper, :recipient, :package)
+        @credentials = credentials
+        @shipper, @recipient, @package, @service_type = options[:shipper], options[:recipient], options[:package], options[:service_type]
+        super(credentials)
+      end
+
       def process_request
         api_response = client(rate_url, build_xml, rate_headers)
         response = parse_response(api_response)
@@ -14,10 +23,10 @@ module CanadaPost
           end
         else
           error_message = if response[:messages]
-            response[:messages][:message][:description]
-          else
-            'api_response.response'
-          end
+                            response[:messages][:message][:description]
+                          else
+                            'api_response.response'
+                          end
           raise RateError, error_message
         end
       end
@@ -30,8 +39,8 @@ module CanadaPost
 
       def rate_headers
         {
-          'Content-type' => 'application/vnd.cpc.ship.rate-v3+xml',
-          'Accept'       => 'application/vnd.cpc.ship.rate-v3+xml'
+            'Content-type' => 'application/vnd.cpc.ship.rate-v3+xml',
+            'Accept' => 'application/vnd.cpc.ship.rate-v3+xml'
         }
       end
 
@@ -63,6 +72,22 @@ module CanadaPost
         }
       end
 
+      def add_package(xml)
+        xml.send(:"parcel-characteristics") {
+          xml.weight @package[:weight][:value]
+          if @package[:dimensions]
+            xml.dimensions {
+              xml.height @package[:dimensions][:height].round(1)
+              xml.width @package[:dimensions][:width].round(1)
+              xml.length @package[:dimensions][:length].round(1)
+            }
+          end
+          if @package[:cylinder]
+            xml.send(:"mailing-tube", @package[:cylinder])
+          end
+        }
+      end
+
       def add_destination(xml)
         if @recipient[:country_code] == "CA"
           xml.domestic {
@@ -70,7 +95,7 @@ module CanadaPost
           }
         elsif @recipient[:country_code] == "US"
           xml.send(:"united-states") {
-            xml.send(:"zip-code",  @recipient[:postal_code])
+            xml.send(:"zip-code", @recipient[:postal_code])
           }
         else
           xml.international {

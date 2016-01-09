@@ -18,9 +18,9 @@ describe CanadaPost::Request::Manifest do
 
   describe 'Shipment shipping service' do
     let(:canada_post_service) { CanadaPost::Client.new(canada_post_credentials) }
-    let(:destination) { {name: '', company: '', address_details: {address: '', city: '', zip: '', country: '', state: ''}} }
-    let(:group_id) { {value: ''} }
-    let(:phone) { {value: ''} }
+    let(:destination) { {name: 'nazrul recp', company: 'your company', address_details: {address: 'test dest address', city: 'Ottawa', state: 'ON', country: 'CA', zip: 'K1P5Z9'}} }
+    let(:group_id) { {value: '5241556'} }
+    let(:phone) { {value: '34343435'} }
 
     context 'shipping manifest', :vcr do
       let(:manifest) {
@@ -28,6 +28,10 @@ describe CanadaPost::Request::Manifest do
                                      phone: phone[:value],
                                      group_id: group_id[:value])
       }
+
+      it 'Should return empty result' do
+        expect(manifest[:errors]).to eq 'All groups in the transmit request were empty or all shipments were excluded; there was nothing to transmit'
+      end
     end
   end
 

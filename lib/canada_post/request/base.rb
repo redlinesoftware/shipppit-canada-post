@@ -115,22 +115,6 @@ module CanadaPost
         raise NotImplementedError, "Override #build_xml in subclass"
       end
 
-      def add_package(xml)
-        xml.send(:"parcel-characteristics") {
-          xml.weight @package[:weight][:value]
-          if @package[:dimensions]
-            xml.dimensions {
-              xml.height @package[:dimensions][:height].round(1)
-              xml.width @package[:dimensions][:width].round(1)
-              xml.length @package[:dimensions][:length].round(1)
-            }
-          end
-          if @package[:cylinder]
-            xml.send(:"mailing-tube", @package[:cylinder])
-          end
-        }
-      end
-
       # Parse response, convert keys to underscore symbols
       def parse_response(response)
         response = Hash.from_xml(response.parsed_response.gsub("\n", "")) if response.parsed_response.is_a? String
