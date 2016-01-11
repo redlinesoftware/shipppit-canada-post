@@ -103,8 +103,9 @@ module CanadaPost
         if @mailing_date.present?
           xml.send(:'expected-mailing-date', @mailing_date)
         end
-        xml.send(:'requested-shipping-point', @sender[:shipping_point])
-        # xml.send(:'cpc-pickup-indicator', false)
+        sender_zip = @sender[:address_details][:zip].present? ? @sender[:address_details][:zip].gsub(' ', '') : ''
+        rsp = @sender[:shipping_point].present? ? @sender[:shipping_point].gsub(' ', '') : sender_zip
+        xml.send(:'requested-shipping-point', rsp)
         xml.send(:'delivery-spec') {
           add_delivery_spec(xml)
         }
@@ -166,7 +167,9 @@ module CanadaPost
         xml.send(:'city', params[:city])
         xml.send(:'prov-state', params[:state])
         xml.send(:'country-code', params[:country])
-        xml.send(:'postal-zip-code', params[:zip])
+        if params[:zip].present?
+          xml.send(:'postal-zip-code', params[:zip].gsub(' ', ''))
+        end
       end
 
       def add_package(xml)
