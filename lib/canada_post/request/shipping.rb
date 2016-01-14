@@ -34,9 +34,9 @@ module CanadaPost
         shipment_response[:create_shipping] = shipping_response
         unless shipping_response[:errors].present?
           manifest_params = {
-              destination: @destination,
-              phone: @sender[:phone],
-              group_id: @group_id
+            destination: @destination,
+            phone: @sender[:phone],
+            group_id: @group_id
           }
           manifest_response = CanadaPost::Request::Manifest.new(@credentials, manifest_params).process_request
           shipment_response[:transmit_shipping] = manifest_response
@@ -46,43 +46,46 @@ module CanadaPost
 
       def get_price(shipping_id)
         price_url = api_url + "/#{shipping_id}/price"
-        api_response = self.class.get(price_url,
-                                      headers: shipping_header,
-                                      basic_auth: @authorization
+        api_response = self.class.get(
+          price_url,
+          headers: shipping_header,
+          basic_auth: @authorization
         )
         process_response(api_response)
       end
 
       def details(shipping_id)
         details_url = api_url + "/#{shipping_id}/details"
-        api_response = self.class.get(details_url,
-                                      headers: shipping_header,
-                                      basic_auth: @authorization
+        api_response = self.class.get(
+          details_url,
+          headers: shipping_header,
+          basic_auth: @authorization
         )
         process_response(api_response)
       end
 
       def get_label(label_url)
-        self.class.get(label_url,
-                       headers: {
-                           'Content-type' => 'application/pdf',
-                           'Accept' => 'application/pdf'
-                       },
-                       basic_auth: @authorization
+        self.class.get(
+          label_url,
+          headers: {
+            'Content-type' => 'application/pdf',
+            'Accept' => 'application/pdf'
+          },
+          basic_auth: @authorization
         )
       end
 
       private
 
       def api_url
-        api_url = TEST_URL #@credentials.mode == "production" ? PRODUCTION_URL : TEST_URL
+        api_url = TEST_URL # @credentials.mode == "production" ? PRODUCTION_URL : TEST_URL
         api_url += "/rs/#{@credentials.customer_number}/#{@credentials.customer_number}/shipment"
       end
 
       def shipping_header
         {
-            'Content-type' => 'application/vnd.cpc.shipment-v7+xml',
-            'Accept' => 'application/vnd.cpc.shipment-v7+xml'
+          'Content-type' => 'application/vnd.cpc.shipment-v7+xml',
+          'Accept' => 'application/vnd.cpc.shipment-v7+xml'
         }
       end
 

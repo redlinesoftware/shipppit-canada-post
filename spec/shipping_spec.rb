@@ -21,7 +21,7 @@ describe CanadaPost::Shipment do
     let(:package) { {weight: 2, unpackaged: false, mailing_tube: false, dimensions: {length: 2, width: 2, height: 2}} }
     let(:sender) { {name: 'nazrul', company: 'my company', phone: '34343434', shipping_point: 'H2B1A0', address_details: {address: 'test address road', city: 'MONTREAL', state: 'QC', country: 'CA', zip: 'H2B1A0'}} }
     let(:destination) { {name: 'nazrul recp', company: 'your company', address_details: {address: 'test dest address', city: 'Ottawa', state: 'ON', country: 'CA', zip: 'K1P5Z9'}} }
-    let(:notification) { {email: 'nazrulku07@gmail.com', on_shipment: 'true', on_exception: 'true', on_delivery: 'true'} }
+    let(:notification) { {email: 'user@gmail.com', on_shipment: 'true', on_exception: 'true', on_delivery: 'true'} }
     let(:preferences) { {show_packing_instructions: 'true', show_postage_rate: 'false', show_insured_value: 'true'} }
     let(:group_id) { {value: '5241556'} }
     let(:mailing_date) { {value: '2016-01-10'} }
