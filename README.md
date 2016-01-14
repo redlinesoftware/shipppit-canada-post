@@ -110,6 +110,149 @@ $ [
   ]
 ```
 
+
+## Create Shipping
+
+```ruby 
+
+sender = {
+  name: 'John Doe',
+  company: 'sender company',
+  shipping_point: 'M5X1B8',
+  address_details: {
+    address: '600 blvd Alexandre Taché',
+    phone: '343434',
+    state: 'QC'
+    zip: 'M5X1B8',
+    city: 'Gatineau',
+    country: 'CA'
+  }
+}
+destination = {
+  name: 'John Doe',
+  company: 'receiver company',
+  address_details: {
+    address: '4394 Rue Saint-Denis',
+    state: 'QC'
+    zip: 'H2J2L1',
+    city: 'Montréal',
+    country: 'CA'
+  }
+}
+package = {
+ weight: 2,
+ unpackaged: false,
+ mailing_tube: false,
+ dimensions: {
+   length: 2,
+   width: 2
+   height: 2
+ }
+}
+notification = {
+  email: 'example@gmail.com',
+  on_shipment: true,
+  on_exception: true,
+  on_delivery: true
+}
+preferences = {
+  show_packing_instructions: true,
+  show_postage_rate: true,
+  show_insured_value: true
+}
+settlement_info = {
+  contract_id: 2514533 // 2514533 for sendbox mode
+}
+
+CANADA_POST_SERVICE.create(
+  sender: sender,
+  destination: destination,
+  package: package,
+  notification: notification,
+  preferences: preferences,
+  settlement_info: settlement_info,
+  group_id: '5241556',
+  mailing_date: '2016-01-20',
+  contract_id: '2514533',
+  service_code: 'DOM.RP'
+)
+
+Response: 
+{
+  create_shipping: {create shipping response},
+  transmit_shipping: {transmit shipping response}
+}
+
+Error Code:
+
+{
+  create_shipping: {errors: 'comma separated error essages'},
+  transmit_shipping: {errors: 'comma separated error messages'} 
+}
+```
+
+## Get shipping price
+
+```ruby
+response = CANADA_POST_SERVICE.get_price(shipping_id)
+
+{
+  :shipment_price=>{
+       :xmlns=>"http://www.canadapost.ca/ws/shipment-v7", :service_code=>"DOM.EP", :base_amount=>"10.21", 
+       :priced_options=>
+         {
+            :priced_option=> {:option_code=>"DC", :option_price=>"0.00"}
+         }, 
+       :adjustments=>{
+             :adjustment=>{
+                 :adjustment_code=>"FUELSC", :adjustment_amount=>"0.43"
+             }
+       }, 
+      :pre_tax_amount=>"10.64", :gst_amount=>"0.53", :pst_amount=>"0.00", :hst_amount=>"0.00", :due_amount=>"11.17", :service_standard=>{
+             :am_delivery=>"false", :guaranteed_delivery=>"true", :expected_transmit_time=>"1", :expected_delivery_date=>"2016-01-14"
+      }, :rated_weight=>"2.000"
+   }
+} 
+```
+
+## Get shipping details
+
+```ruby
+response = CANADA_POST_SERVICE.details(shipping_id)
+
+{:shipment_details=>{:xmlns=>"http://www.canadapost.ca/ws/shipment-v7", :shipment_status=>"created", :final_shipping_point=>"M5X1C0", :shipping_point_id=>"7100", :tracking_pin=>"123456789012", :shipment_detail=>{:group_id=>"5241556", :expected_mailing_date=>"2016-01-13", :delivery_spec=>{:service_code=>"DOM.EP", :sender=>{:name=>"John Doe", :company=>"Apple", :contact_phone=>"343434", :address_details=>{:address_line_1=>"600 blvd Alexandre Taché", :city=>"Gatineau", :prov_state=>"QC", :country_code=>"CA", :postal_zip_code=>"M5X1B8"}}, :destination=>{:name=>"receiver", :company=>"receiver company", :address_details=>{:address_line_1=>"4394 Rue Saint-Denis", :city=>"Montréal", :prov_state=>"QC", :country_code=>"CA", :postal_zip_code=>"H2J2L1"}}, :options=>{:option=>{:option_code=>"DC"}}, :parcel_characteristics=>{:weight=>"2.000", :dimensions=>{:length=>"2.0", :width=>"2.0", :height=>"2.0"}, :unpackaged=>"false", :mailing_tube=>"false", :oversized=>"false"}, :notification=>{:email=>"nazrulku07@gmail.com", :on_shipment=>"true", :on_exception=>"false", :on_delivery=>"true"}, :print_preferences=>{:output_format=>"8.5x11", :encoding=>"PDF"}, :preferences=>{:show_packing_instructions=>"true", :show_postage_rate=>"false", :show_insured_value=>"true"}, :settlement_info=>{:paid_by_customer=>"0002004381", :contract_id=>"0042708517", :intended_method_of_payment=>"Account"}}}}} 
+
+```
+
+## Get shipping label
+```ruby
+CANADA_POST_SERVICE.get_label(label_url)
+```
+this return a pdf response with label details.
+
+## Get manifest
+```ruby
+response = CANADA_POST_SERVICE.get_manifest(manifest_url)
+
+{:manifest=>{:xmlns=>"http://www.canadapost.ca/ws/manifest-v7", :po_number=>"P123456789", :links=>{:link=>[{:rel=>"self", :href=>"https://ct.soa-gw.canadapost.ca/rs/0002004381/0002004381/manifest/96011452532284803", :media_type=>"application/vnd.cpc.manifest-v7+xml"}, {:rel=>"details", :href=>"https://ct.soa-gw.canadapost.ca/rs/0002004381/0002004381/manifest/96011452532284803/details", :media_type=>"application/vnd.cpc.manifest-v7+xml"}, {:rel=>"manifestShipments", :href=>"https://ct.soa-gw.canadapost.ca/rs/0002004381/0002004381/shipment?manifestId=96011452532284803", :media_type=>"application/vnd.cpc.shipment-v7+xml"}, {:rel=>"artifact", :href=>"https://ct.soa-gw.canadapost.ca/ers/artifact/6e93d53968881714/400811/0", :media_type=>"application/pdf"}]}}} 
+```
+
+## Get artifact
+```ruby
+response = CANADA_POST_SERVICE.get_artifact(artifact_url)
+Response:
+{
+   status: true,
+   artifact: artifact // pdf response
+}
+
+Error:
+{
+   status: false,
+   error: 'artifact error message'
+}
+```
+
 Your final amount will be under `total_net_charge`:
 
 ```ruby
