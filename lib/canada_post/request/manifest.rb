@@ -15,43 +15,50 @@ module CanadaPost
       end
 
       def process_request
-        api_response = self.class.post(api_url,
-                                       body: build_xml,
-                                       headers: manifest_header,
-                                       basic_auth: @authorization
+        api_response = self.class.post(
+          api_url,
+          body: build_xml,
+          headers: manifest_header,
+          basic_auth: @authorization
         )
         process_response(api_response)
       end
 
       def get_manifest(url)
-        api_response = self.class.get(url,
-                                      headers: manifest_header,
-                                      basic_auth: @authorization
+        api_response = self.class.get(
+          url,
+          headers: manifest_header,
+          basic_auth: @authorization
         )
         process_response(api_response)
       end
 
       def get_artifact(url)
-        self.class.get(url,
-                       headers: {
-                           'Content-type' => 'application/pdf',
-                           'Accept' => 'application/pdf'
-                       },
-                       basic_auth: @authorization
+        self.class.get(
+          url,
+          headers: artifact_header,
+          basic_auth: @authorization
         )
       end
 
       private
 
       def api_url
-        api_url = TEST_URL #@credentials.mode == "production" ? PRODUCTION_URL : TEST_URL
+        api_url = TEST_URL # @credentials.mode == "production" ? PRODUCTION_URL : TEST_URL
         api_url += "/rs/#{@credentials.customer_number}/#{@credentials.customer_number}/manifest"
       end
 
       def manifest_header
         {
-            'Content-type' => 'application/vnd.cpc.manifest-v7+xml',
-            'Accept' => 'application/vnd.cpc.manifest-v7+xml'
+          'Content-type' => 'application/vnd.cpc.manifest-v7+xml',
+          'Accept' => 'application/vnd.cpc.manifest-v7+xml'
+        }
+      end
+
+      def artifact_header
+        {
+          'Content-type' => 'application/pdf',
+          'Accept' => 'application/pdf'
         }
       end
 
