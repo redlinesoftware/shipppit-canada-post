@@ -75,7 +75,7 @@ module CanadaPost
       private
 
       def api_url
-        api_url = TEST_URL #@credentials.mode == "production" ? PRODUCTION_URL : TEST_URL
+        api_url = @credentials.mode == "production" ? PRODUCTION_URL : TEST_URL
         api_url += "/rs/#{@credentials.customer_number}/#{@credentials.customer_number}/shipment"
       end
 
@@ -103,7 +103,7 @@ module CanadaPost
         if @mailing_date.present?
           xml.send(:'expected-mailing-date', @mailing_date)
         end
-        sender_zip = @sender[:address_details][:zip].present? ? @sender[:address_details][:zip].gsub(' ', '') : ''
+        sender_zip = @sender[:address_details][:postal_code].present? ? @sender[:address_details][:postal_code].gsub(' ', '') : ''
         rsp = @sender[:shipping_point].present? ? @sender[:shipping_point].gsub(' ', '') : sender_zip
         xml.send(:'requested-shipping-point', rsp)
         xml.send(:'delivery-spec') {
@@ -140,7 +140,8 @@ module CanadaPost
         }
 
         xml.send(:'settlement-info') {
-          xml.send(:'contract-id', '42708517')
+          contact_id = @credentials.mode == "production" ? @contact_id : TEST_CONTACT_ID
+          xml.send(:'contract-id', contact_id)
           xml.send(:'intended-method-of-payment', 'Account')
         }
       end
@@ -167,13 +168,15 @@ module CanadaPost
         xml.send(:'city', params[:city])
         xml.send(:'prov-state', params[:state])
         xml.send(:'country-code', params[:country])
-        if params[:zip].present?
-          xml.send(:'postal-zip-code', params[:zip].gsub(' ', ''))
+        if params[:postal_code].present?
+          xml.send(:'postal-zip-code', params[:postal_code].gsub(' ', ''))
         end
       end
 
       def add_package(xml)
         xml.send(:"parcel-characteristics") {
+          xml.unpackaged @package[:unpackaged].present? ? @package[:unpackaged] : false
+          xml.mailing_tube @package[:mailing_tube].present? ? @package[:mailing_tube] : false
           xml.weight @package[:weight]
           if @package[:dimensions]
             xml.dimensions {

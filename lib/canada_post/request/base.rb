@@ -17,6 +17,9 @@ module CanadaPost
       # CanadaPost API Production URL
       PRODUCTION_URL = "https://soa-gw.canadapost.ca"
 
+      # CanadaPost API TEST CONTACT ID
+      TEST_CONTACT_ID = "42708517"
+
       # List of available Option Codes
       # SO - Signature
       # COV - Coverage  (requires qualifier)

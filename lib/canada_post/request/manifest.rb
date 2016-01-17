@@ -86,8 +86,8 @@ module CanadaPost
         xml.send(:'address-line-1', params[:address])
         xml.send(:'city', params[:city])
         xml.send(:'prov-state', params[:state])
-        if params[:zip].present?
-          xml.send(:'postal-zip-code', params[:zip].gsub(' ', ''))
+        if params[:postal_code].present?
+          xml.send(:'postal-zip-code', params[:postal_code].gsub(' ', ''))
         end
       end
 
