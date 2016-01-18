@@ -22,11 +22,12 @@ module CanadaPost
             CanadaPost::Rate.new(rate_reply)
           end
         else
-          error_message = if response[:messages]
-                            response[:messages][:message][:description]
-                          else
-                            'api_response.response'
-                          end
+          error_message =
+            if response[:messages]
+              response[:messages][:message][:description]
+            else
+              'api_response.response'
+            end
           raise RateError, error_message
         end
       end
@@ -39,8 +40,8 @@ module CanadaPost
 
       def rate_headers
         {
-            'Content-type' => 'application/vnd.cpc.ship.rate-v3+xml',
-            'Accept' => 'application/vnd.cpc.ship.rate-v3+xml'
+          'Content-type' => 'application/vnd.cpc.ship.rate-v3+xml',
+          'Accept' => 'application/vnd.cpc.ship.rate-v3+xml'
         }
       end
 

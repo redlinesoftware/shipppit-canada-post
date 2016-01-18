@@ -25,10 +25,11 @@ module CanadaPost
 
       def process_request
         shipment_response = Hash.new
-        api_response = self.class.post(api_url,
-                                       body: build_xml,
-                                       headers: shipping_header,
-                                       basic_auth: @authorization
+        api_response = self.class.post(
+          api_url,
+          body: build_xml,
+          headers: shipping_header,
+          basic_auth: @authorization
         )
         shipping_response = process_response(api_response)
         shipment_response[:create_shipping] = shipping_response
@@ -143,8 +144,8 @@ module CanadaPost
         }
 
         xml.send(:'settlement-info') {
-          contact_id = @credentials.mode == "production" ? @contact_id : TEST_CONTACT_ID
-          xml.send(:'contract-id', contact_id)
+          contract_id = @credentials.mode == "production" ? @contract_id : TEST_CONTRACT_ID
+          xml.send(:'contract-id', contract_id)
           xml.send(:'intended-method-of-payment', 'Account')
         }
       end
