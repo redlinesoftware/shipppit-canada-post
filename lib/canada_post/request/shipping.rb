@@ -179,7 +179,7 @@ module CanadaPost
       def add_package(xml)
         xml.send(:"parcel-characteristics") {
           xml.unpackaged @package[:unpackaged].present? ? @package[:unpackaged] : false
-          xml.mailing_tube @package[:mailing_tube].present? ? @package[:mailing_tube] : false
+          xml.send(:"mailing-tube", @package[:mailing_tube].present? ? @package[:mailing_tube] : false)
           xml.weight @package[:weight]
           if @package[:dimensions]
             xml.dimensions {

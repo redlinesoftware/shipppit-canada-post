@@ -18,7 +18,7 @@ describe CanadaPost::Request::Manifest do
 
   describe 'Shipment shipping service' do
     let(:canada_post_service) { CanadaPost::Client.new(canada_post_credentials) }
-    let(:destination) { {name: 'nazrul recp', company: 'your company', address_details: {address: 'test dest address', city: 'Ottawa', state: 'ON', country: 'CA', zip: 'K1P5Z9'}} }
+    let(:destination) { {name: 'nazrul recp', company: 'your company', address_details: {address: 'test dest address', city: 'Ottawa', state: 'ON', country: 'CA', postal_code: 'K1P5Z9'}} }
     let(:group_id) { {value: '5241556'} }
     let(:phone) { {value: '34343435'} }
 
