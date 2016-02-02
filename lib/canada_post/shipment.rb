@@ -21,6 +21,10 @@ module CanadaPost
       Request::Manifest.new(@credentials).get_manifest(url)
     end
 
+    def registration
+      Request::Registration.new(@credentials).process_request
+    end
+
     def get_artifact(url)
       manifest = Request::Manifest.new(@credentials).get_manifest(url)
       if manifest[:errors].present?

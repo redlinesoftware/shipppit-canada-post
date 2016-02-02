@@ -16,6 +16,13 @@ module CanadaPost
           @preferences = options[:preferences]
           @settlement_info = options[:settlement_info]
           @group_id = options[:group_id]
+          if options[:mobo].present?
+            @mobo = options[:mobo].present? ? options[:mobo] : @credentials.customer_number
+            @customer = "#{@credentials.customer_number}"
+          else
+            @mobo = @credentials.customer_number
+            @customer = @credentials.customer_number
+          end
           @mailing_date = options[:mailing_date]
           @contract_id = @credentials.customer_number
           @service_code = options[:service_code]
@@ -24,6 +31,7 @@ module CanadaPost
       end
 
       def process_request
+        puts "CUS: #{@customer} MOBO #{@mobo} : API URL: #{api_url}"
         shipment_response = Hash.new
         api_response = self.class.post(
           api_url,
@@ -80,7 +88,7 @@ module CanadaPost
 
       def api_url
         api_url = @credentials.mode == "production" ? PRODUCTION_URL : TEST_URL
-        api_url += "/rs/#{@credentials.customer_number}/#{@credentials.customer_number}/shipment"
+        api_url += "/rs/#{@customer}/#{@mobo}/shipment"
       end
 
       def shipping_header
