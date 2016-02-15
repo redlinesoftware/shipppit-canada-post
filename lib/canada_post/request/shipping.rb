@@ -16,36 +16,39 @@ module CanadaPost
           @preferences = options[:preferences]
           @settlement_info = options[:settlement_info]
           @group_id = options[:group_id]
-          if options[:mobo].present?
-            @mobo = options[:mobo].present? ? options[:mobo] : @credentials.customer_number
-            @customer = "#{@credentials.customer_number}"
+          @mobo = options[:mobo]
+          if @mobo[:customer_number].present?
+            @mobo_customer = @mobo[:customer_number]
+            @shipping_auth = {username: @mobo[:username], password: @mobo[:password]}
           else
-            @mobo = @credentials.customer_number
-            @customer = @credentials.customer_number
+            @mobo_customer = @credentials.customer_number
+            @shipping_auth = {username: credential.username, password: credential.password}
           end
+          @customer_number = @credentials.customer_number
           @mailing_date = options[:mailing_date]
-          @contract_id = @credentials.customer_number
+          @contract_id = options[:contract_id]
           @service_code = options[:service_code]
         end
         super(credential)
       end
 
       def process_request
-        puts "CUS: #{@customer} MOBO #{@mobo} : API URL: #{api_url}"
+        puts "Shipping Auth: #{@shipping_auth}"
         shipment_response = Hash.new
         api_response = self.class.post(
-          api_url,
-          body: build_xml,
-          headers: shipping_header,
-          basic_auth: @authorization
+            shipping_url,
+            body: build_xml,
+            headers: shipping_header,
+            basic_auth: @shipping_auth
         )
+        puts api_response
         shipping_response = process_response(api_response)
         shipment_response[:create_shipping] = shipping_response
         unless shipping_response[:errors].present?
           manifest_params = {
-            destination: @destination,
-            phone: @sender[:phone],
-            group_id: @group_id
+              destination: @destination,
+              phone: @sender[:phone],
+              group_id: @group_id
           }
           manifest_response = CanadaPost::Request::Manifest.new(@credentials, manifest_params).process_request
           shipment_response[:transmit_shipping] = manifest_response
@@ -56,9 +59,9 @@ module CanadaPost
       def get_price(shipping_id)
         price_url = api_url + "/#{shipping_id}/price"
         api_response = self.class.get(
-          price_url,
-          headers: shipping_header,
-          basic_auth: @authorization
+            price_url,
+            headers: shipping_header,
+            basic_auth: @authorization
         )
         process_response(api_response)
       end
@@ -66,36 +69,49 @@ module CanadaPost
       def details(shipping_id)
         details_url = api_url + "/#{shipping_id}/details"
         api_response = self.class.get(
-          details_url,
-          headers: shipping_header,
-          basic_auth: @authorization
+            details_url,
+            headers: shipping_header,
+            basic_auth: @authorization
         )
         process_response(api_response)
       end
 
       def get_label(label_url)
         self.class.get(
-          label_url,
-          headers: {
-            'Content-type' => 'application/pdf',
-            'Accept' => 'application/pdf'
-          },
-          basic_auth: @authorization
+            label_url,
+            headers: {
+                'Content-type' => 'application/pdf',
+                'Accept' => 'application/pdf'
+            },
+            basic_auth: @authorization
         )
       end
 
       private
 
       def api_url
-        api_url = @credentials.mode == "production" ? PRODUCTION_URL : TEST_URL
-        api_url += "/rs/#{@customer}/#{@mobo}/shipment"
+        @credentials.mode == "production" ? PRODUCTION_URL : TEST_URL
+      end
+
+      def shipping_url
+        base_url = api_url
+        if @mobo[:customer_number].present?
+          base_url += "/rs/#{@mobo_customer}-#{@customer_number}/#{@mobo_customer}/shipment"
+        else
+          base_url += "/rs/#{@customer_number}/#{@customer_number}/shipment"
+        end
+        base_url
       end
 
       def shipping_header
-        {
-          'Content-type' => 'application/vnd.cpc.shipment-v7+xml',
-          'Accept' => 'application/vnd.cpc.shipment-v7+xml'
+        header = {
+            'Content-type' => 'application/vnd.cpc.shipment-v7+xml',
+            'Accept' => 'application/vnd.cpc.shipment-v7+xml'
         }
+        if @mobo[:customer_number].present?
+          header['Platform-id'] = @customer_number
+        end
+        header
       end
 
       def build_xml
@@ -154,6 +170,9 @@ module CanadaPost
         xml.send(:'settlement-info') {
           contract_id = @credentials.mode == "production" ? @contract_id : TEST_CONTRACT_ID
           xml.send(:'contract-id', contract_id)
+          if @mobo[:customer_number].present?
+            xml.send(:'paid-by-customer', @mobo_customer)
+          end
           xml.send(:'intended-method-of-payment', 'Account')
         }
       end

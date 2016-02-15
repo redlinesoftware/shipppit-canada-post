@@ -44,7 +44,7 @@ module CanadaPost
       private
 
       def api_url
-        api_url = TEST_URL # @credentials.mode == "production" ? PRODUCTION_URL : TEST_URL
+        api_url = @credentials.mode == "production" ? PRODUCTION_URL : TEST_URL
         api_url += "/rs/#{@credentials.customer_number}/#{@credentials.customer_number}/manifest"
       end
 
