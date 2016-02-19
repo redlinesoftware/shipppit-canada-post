@@ -17,7 +17,7 @@ module CanadaPost
           @settlement_info = options[:settlement_info]
           @group_id = options[:group_id]
           @mobo = options[:mobo]
-          if @mobo[:customer_number].present?
+          if @mobo.present? && @mobo[:customer_number].present?
             @mobo_customer = @mobo[:customer_number]
             @shipping_auth = {username: @mobo[:username], password: @mobo[:password]}
           else
@@ -33,7 +33,6 @@ module CanadaPost
       end
 
       def process_request
-        puts "Shipping Auth: #{@shipping_auth}"
         shipment_response = Hash.new
         api_response = self.class.post(
             shipping_url,
@@ -41,7 +40,6 @@ module CanadaPost
             headers: shipping_header,
             basic_auth: @shipping_auth
         )
-        puts api_response
         shipping_response = process_response(api_response)
         shipment_response[:create_shipping] = shipping_response
         unless shipping_response[:errors].present?
@@ -66,8 +64,8 @@ module CanadaPost
         process_response(api_response)
       end
 
-      def details(shipping_id)
-        details_url = api_url + "/#{shipping_id}/details"
+      def details(shipping_id, mobo = @credentials.customer_number)
+        details_url = api_url + "/rs/#{@credentials.customer_number}/#{mobo}/shipment/#{shipping_id}/details"
         api_response = self.class.get(
             details_url,
             headers: shipping_header,
@@ -95,7 +93,7 @@ module CanadaPost
 
       def shipping_url
         base_url = api_url
-        if @mobo[:customer_number].present?
+        if @mobo.present? && @mobo[:customer_number].present?
           base_url += "/rs/#{@mobo_customer}-#{@customer_number}/#{@mobo_customer}/shipment"
         else
           base_url += "/rs/#{@customer_number}/#{@customer_number}/shipment"
@@ -108,7 +106,7 @@ module CanadaPost
             'Content-type' => 'application/vnd.cpc.shipment-v7+xml',
             'Accept' => 'application/vnd.cpc.shipment-v7+xml'
         }
-        if @mobo[:customer_number].present?
+        if @mobo.present? && @mobo[:customer_number].present?
           header['Platform-id'] = @customer_number
         end
         header
@@ -170,7 +168,7 @@ module CanadaPost
         xml.send(:'settlement-info') {
           contract_id = @credentials.mode == "production" ? @contract_id : TEST_CONTRACT_ID
           xml.send(:'contract-id', contract_id)
-          if @mobo[:customer_number].present?
+          if @mobo.present? && @mobo[:customer_number].present?
             xml.send(:'paid-by-customer', @mobo_customer)
           end
           xml.send(:'intended-method-of-payment', 'Account')

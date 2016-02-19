@@ -25,7 +25,7 @@ module CanadaPost
       Request::Shipping.new(@credentials).get_label(label_url)
     end
 
-    def details(shipping_id)
+    def details(shipping_id, mobo = @credentials.customer_number)
       Request::Shipping.new(@credentials).details(shipping_id)
     end
 

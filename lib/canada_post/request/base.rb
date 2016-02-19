@@ -18,7 +18,7 @@ module CanadaPost
       PRODUCTION_URL = "https://soa-gw.canadapost.ca"
 
       # CanadaPost API TEST CONTRACT ID
-      TEST_CONTRACT_ID = "42708517"
+      TEST_CONTRACT_ID = "0042708517"
 
       # List of available Option Codes
       # SO - Signature

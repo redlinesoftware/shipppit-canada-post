@@ -90,16 +90,24 @@ describe CanadaPost::Shipment do
                                    contract_number: contract_number[:value])
       }
 
+      let(:get_shipment) {
+        canada_post_service.details(shipping[:create_shipping][:shipment_info][:shipment_id], mobo[:customer_number])
+      }
+
       it 'Should create a shipping' do
         expect(shipping[:create_shipping][:errors]).to be_nil
       end
 
-      it 'Should get a shipping id' do
+      it 'Should get a mobo shipping id' do
         expect(shipping[:create_shipping][:shipment_info][:shipment_id]).not_to be_nil
       end
 
-      it 'Should transmit shipping' do
+      it 'Should transmit mobo shipping' do
         expect(shipping[:transmit_shipping][:errors]).to be_nil
+      end
+
+      it 'Should get mobo shipping details' do
+        expect(get_shipment[:shipment_details]).not_to be_nil
       end
     end
   end
