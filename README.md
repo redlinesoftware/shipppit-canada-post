@@ -190,6 +190,37 @@ Error Code:
 }
 ```
 
+## Create shipping mail behind of
+```ruby
+Pass aditional params with create shipping is merchant information for mail behind of, 
+You can find marchant information after register a merchant into your application. 
+
+CANADA_POST_SERVICE.create(
+  mobo: {
+     username: 'xxx',
+     password: 'password',
+     customer_number: '123456789',
+     contract_number: '987654321'
+  }
+)
+```
+
+##Merchant registration 
+
+Get token, You need your application token for a merchant registration.
+```ruby
+@token = CANADA_POST_SERVICE.registration
+{'token-id' => '11111111111111111111111'}
+```
+Submit registration form after gating token, Post the following field to https://www.canadapost.ca/cpotools/apps/drc/merchant
+- return-url //callback url to your application
+- token-id
+- platform-id
+
+After callback you will find merchant information like username, password, customer_number, contract_number
+
+
+
 ## Get shipping price
 
 ```ruby
