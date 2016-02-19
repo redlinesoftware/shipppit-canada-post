@@ -21,8 +21,8 @@ module CanadaPost
       Request::Manifest.new(@credentials).get_manifest(url)
     end
 
-    def registration
-      Request::Registration.new(@credentials).process_request
+    def registration_token
+      Request::Registration.new(@credentials).get_token
     end
 
     def get_merchant_info(token)

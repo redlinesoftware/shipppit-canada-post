@@ -33,5 +33,9 @@ module CanadaPost
       Request::Manifest.new(@credentials, options).process_request
     end
 
+    def registration_token
+      Request::Registration.new(@credentials).get_token
+    end
+
   end
 end

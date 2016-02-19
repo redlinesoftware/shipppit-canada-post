@@ -6,18 +6,18 @@ module CanadaPost
         super(credential)
       end
 
-      def process_request
+      def get_token
         api_response = self.class.post(
             api_url,
             headers: api_header,
             basic_auth: @authorization
         )
         shipping_response = process_response(api_response)
-        puts shipping_response.inspect
         if shipping_response[:token].present?
-          token_id = shipping_response[:token][:token_id]
+          shipping_response[:token]
+        else
+          shipping_response
         end
-        return token_id
       end
 
       def marchant_info(token)

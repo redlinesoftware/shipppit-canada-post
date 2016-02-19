@@ -26,7 +26,13 @@ describe CanadaPost::Shipment do
     let(:group_id) { {value: '5241557'} }
     let(:mailing_date) { {value: "#{Date.today + 5}"} }
     let(:service_code) { {value: 'DOM.EP'} }
-    let(:contract_id) { {value: '42708517'} }
+    let(:contract_number) { {value: '42708517'} }
+    let(:mobo) { {
+        username: 'xxx',
+        password: 'password',
+        customer_number: '123456789',
+        contract_number: '987654321'}
+    }
 
     context 'create shipment', :vcr do
       let(:shipping) {
@@ -38,7 +44,7 @@ describe CanadaPost::Shipment do
                                    group_id: group_id[:value],
                                    mailing_date: mailing_date[:value],
                                    service_code: service_code[:value],
-                                   contract_id: contract_id[:value]) }
+                                   contract_number: contract_number[:value]) }
 
       it 'Should create a shipping' do
         expect(shipping[:create_shipping][:errors]).to be_nil
@@ -68,6 +74,33 @@ describe CanadaPost::Shipment do
         expect(get_shipment[:shipment_details][:shipment_status]).to eq 'transmitted'
       end
 
+    end
+
+    context "Create shipping mail behind of", :vcr do
+      let(:shipping) {
+        canada_post_service.create(sender: sender,
+                                   destination: destination,
+                                   package: package,
+                                   mobo: mobo,
+                                   notification: notification,
+                                   preferences: preferences,
+                                   group_id: group_id[:value],
+                                   mailing_date: mailing_date[:value],
+                                   service_code: service_code[:value],
+                                   contract_number: contract_number[:value])
+      }
+
+      it 'Should create a shipping' do
+        expect(shipping[:create_shipping][:errors]).to be_nil
+      end
+
+      it 'Should get a shipping id' do
+        expect(shipping[:create_shipping][:shipment_info][:shipment_id]).not_to be_nil
+      end
+
+      it 'Should transmit shipping' do
+        expect(shipping[:transmit_shipping][:errors]).to be_nil
+      end
     end
   end
 end
