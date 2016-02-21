@@ -224,7 +224,7 @@ After callback you will find merchant information like username, password, custo
 ## Get shipping price
 
 ```ruby
-response = CANADA_POST_SERVICE.get_price(shipping_id)
+response = CANADA_POST_SERVICE.get_price(shipping_id, mobo = optional)
 
 {
   :shipment_price=>{
@@ -248,7 +248,7 @@ response = CANADA_POST_SERVICE.get_price(shipping_id)
 ## Get shipping details
 
 ```ruby
-response = CANADA_POST_SERVICE.details(shipping_id)
+response = CANADA_POST_SERVICE.details(shipping_id, mobo = optional)
 
 {:shipment_details=>{:xmlns=>"http://www.canadapost.ca/ws/shipment-v7", :shipment_status=>"created", :final_shipping_point=>"M5X1C0", :shipping_point_id=>"7100", :tracking_pin=>"123456789012", :shipment_detail=>{:group_id=>"5241556", :expected_mailing_date=>"2016-01-13", :delivery_spec=>{:service_code=>"DOM.EP", :sender=>{:name=>"John Doe", :company=>"Apple", :contact_phone=>"343434", :address_details=>{:address_line_1=>"600 blvd Alexandre Taché", :city=>"Gatineau", :prov_state=>"QC", :country_code=>"CA", :postal_zip_code=>"M5X1B8"}}, :destination=>{:name=>"receiver", :company=>"receiver company", :address_details=>{:address_line_1=>"4394 Rue Saint-Denis", :city=>"Montréal", :prov_state=>"QC", :country_code=>"CA", :postal_zip_code=>"H2J2L1"}}, :options=>{:option=>{:option_code=>"DC"}}, :parcel_characteristics=>{:weight=>"2.000", :dimensions=>{:length=>"2.0", :width=>"2.0", :height=>"2.0"}, :unpackaged=>"false", :mailing_tube=>"false", :oversized=>"false"}, :notification=>{:email=>"user@gmail.com", :on_shipment=>"true", :on_exception=>"false", :on_delivery=>"true"}, :print_preferences=>{:output_format=>"8.5x11", :encoding=>"PDF"}, :preferences=>{:show_packing_instructions=>"true", :show_postage_rate=>"false", :show_insured_value=>"true"}, :settlement_info=>{:paid_by_customer=>"0002004381", :contract_id=>"0042708517", :intended_method_of_payment=>"Account"}}}}}
 
@@ -280,6 +280,15 @@ Error:
 {
    status: false,
    error: 'artifact error message'
+}
+```
+
+## Void shipping
+```ruby
+response = CANADA_POST_SERVICE.void_shipping(shipping_id, mobo = optional)
+Error: {
+  status: false,
+  error: 'void shipping error'
 }
 ```
 
