@@ -54,8 +54,8 @@ module CanadaPost
         shipment_response
       end
 
-      def get_price(shipping_id)
-        price_url = api_url + "/#{shipping_id}/price"
+      def get_price(shipping_id, mobo = @credentials.customer_number)
+        price_url = api_url + "/rs/#{@credentials.customer_number}/#{mobo}/shipment/#{shipping_id}/price"
         api_response = self.class.get(
             price_url,
             headers: shipping_header,
@@ -83,6 +83,17 @@ module CanadaPost
             },
             basic_auth: @authorization
         )
+      end
+
+      def void_shipping(shipping_id, mobo = @credentials.customer_number)
+        void_url = api_url + "/rs/#{@credentials.customer_number}/#{mobo}/shipment/#{shipping_id}"
+        api_response = self.class.delete(
+            void_url,
+            headers: shipping_header,
+            basic_auth: @authorization
+        )
+        puts api_response
+        process_response(api_response)
       end
 
       private

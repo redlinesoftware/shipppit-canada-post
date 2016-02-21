@@ -74,6 +74,22 @@ describe CanadaPost::Shipment do
         expect(get_shipment[:shipment_details][:shipment_status]).to eq 'transmitted'
       end
 
+      let(:get_price) {
+        canada_post_service.get_price(shipping[:create_shipping][:shipment_info][:shipment_id])
+      }
+
+      it 'Should get shipping price' do
+        expect(get_price[:shipment_price]).not_to be_nil
+      end
+
+      let(:void_shipping) {
+        canada_post_service.void_shipment(shipping[:create_shipping][:shipment_info][:shipment_id])
+      }
+
+      it 'Should void' do
+        expect(void_shipping[:errors]).to be_nil
+      end
+
     end
 
     context "Create shipping mail behind of", :vcr do

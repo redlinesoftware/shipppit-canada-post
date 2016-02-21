@@ -17,8 +17,8 @@ module CanadaPost
       Request::Shipping.new(@credentials, options).process_request
     end
 
-    def get_price(shipping_id)
-      Request::Shipping.new(@credentials).get_price(shipping_id)
+    def get_price(shipping_id, mobo = @credentials.customer_number)
+      Request::Shipping.new(@credentials).get_price(shipping_id, mobo)
     end
 
     def get_label(label_url)
@@ -26,7 +26,11 @@ module CanadaPost
     end
 
     def details(shipping_id, mobo = @credentials.customer_number)
-      Request::Shipping.new(@credentials).details(shipping_id)
+      Request::Shipping.new(@credentials).details(shipping_id, mobo)
+    end
+
+    def void_shipment(shipping_id, mobo = @credentials.customer_number)
+      Request::Shipping.new(@credentials).void_shipping(shipping_id, mobo)
     end
 
     def manifest(options={})
