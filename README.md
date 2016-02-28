@@ -7,7 +7,6 @@ Thanks to [jazminschroeder](https://github.com/jazminschroeder) and all contribu
 
 For more info see the [Official Canada Post Developer Docs](https://www.canadapost.ca/cpotools/apps/drc/home)
 
-
 ## Installation
 
 Add this line to your application's Gemfile:
@@ -36,9 +35,9 @@ Create a service:
 
 ```ruby
 canada_post_service = CanadaPost::Client.new( username: 'xxxx',
-									password: 'xxxx',
-									customer_number: 'xxxx',
-									mode: 'development' )
+                  password: 'xxxx',
+                  customer_number: 'xxxx',
+                  mode: 'development' )
 # mode can be 'development' or 'production'
 ```
 
@@ -73,9 +72,8 @@ $ => ["DOM.RP", "DOM.EP", "DOM.XP", "DOM.XP.CERT", "DOM.PC.CERT", "DOM.PC", "DOM
 ### Get Rates:
 
 ```ruby
-$ rates = canada_post_service.rate( shipper: shipper,
-                                    recipient: recipient,
-                                    package: package )
+$ rates = canada_post_service.rate(
+  shipper: shipper, recipient: recipient, package: package)
 ```
 
 Not specifying a service type will return an array of all available rates
@@ -95,21 +93,26 @@ $ rates = canada_post_service.rate( shipper: shipper,
                                     service_type: service_type )
 # complete response
 $ [
-	#<CanadaPost::Rate:0x007fd783fea238
-		@service_type="Expedited Parcel",
-		@service_code="DOM.EP",
-		@total_net_charge="8.76",
-		@total_base_charge="7.77",
-		@gst_taxes="0.00",
-		@pst_taxes="0.00",
-		@hst_taxes="1.01",
-		@expected_transit_time="1",
+  #<CanadaPost::Rate:0x007fd783fea238
+    @service_type="Expedited Parcel",
+    @service_code="DOM.EP",
+    @total_net_charge="8.76",
+    @total_base_charge="7.77",
+    @gst_taxes="0.00",
+    @pst_taxes="0.00",
+    @hst_taxes="1.01",
+    @expected_transit_time="1",
     @expected_delivery_date="2015-12-25",
     @guaranteed_delivery="false",
     @am_delivery="false">
   ]
 ```
 
+Your final amount will be under `total_net_charge`:
+
+```ruby
+$ rates.first.total_net_charge => '8.76' # all monetary values are CAD
+```
 
 ### Create Shipping
 
@@ -222,11 +225,10 @@ With the token-id in hand, complete the registration process by making another P
 
 Canada Post service will redirect the user to the designated callback URL along with the required information to perform shipping transactions for the merchant (username, password, customer_number and contract_number).
 
-
 ### Get shipping price
 
 ```ruby
-response = canada_post_service.get_price(shipping_id)
+response = canada_post_service.get_price(shipping_id, mobo = optional)
 
 {
   :shipment_price=>{
@@ -250,7 +252,7 @@ response = canada_post_service.get_price(shipping_id)
 ### Get shipping details
 
 ```ruby
-response = canada_post_service.details(shipping_id)
+response = canada_post_service.details(shipping_id, mobo = optional)
 
 {:shipment_details=>{:xmlns=>"http://www.canadapost.ca/ws/shipment-v7", :shipment_status=>"created", :final_shipping_point=>"M5X1C0", :shipping_point_id=>"7100", :tracking_pin=>"123456789012", :shipment_detail=>{:group_id=>"5241556", :expected_mailing_date=>"2016-01-13", :delivery_spec=>{:service_code=>"DOM.EP", :sender=>{:name=>"John Doe", :company=>"Apple", :contact_phone=>"343434", :address_details=>{:address_line_1=>"600 blvd Alexandre Taché", :city=>"Gatineau", :prov_state=>"QC", :country_code=>"CA", :postal_zip_code=>"M5X1B8"}}, :destination=>{:name=>"receiver", :company=>"receiver company", :address_details=>{:address_line_1=>"4394 Rue Saint-Denis", :city=>"Montréal", :prov_state=>"QC", :country_code=>"CA", :postal_zip_code=>"H2J2L1"}}, :options=>{:option=>{:option_code=>"DC"}}, :parcel_characteristics=>{:weight=>"2.000", :dimensions=>{:length=>"2.0", :width=>"2.0", :height=>"2.0"}, :unpackaged=>"false", :mailing_tube=>"false", :oversized=>"false"}, :notification=>{:email=>"user@gmail.com", :on_shipment=>"true", :on_exception=>"false", :on_delivery=>"true"}, :print_preferences=>{:output_format=>"8.5x11", :encoding=>"PDF"}, :preferences=>{:show_packing_instructions=>"true", :show_postage_rate=>"false", :show_insured_value=>"true"}, :settlement_info=>{:paid_by_customer=>"0002004381", :contract_id=>"0042708517", :intended_method_of_payment=>"Account"}}}}}
 
@@ -272,6 +274,7 @@ response = canada_post_service.get_manifest(manifest_url)
 ```
 
 ### Get artifact
+
 ```ruby
 response = canada_post_service.get_artifact(artifact_url)
 Response:
@@ -287,10 +290,14 @@ Error:
 }
 ```
 
-Your final amount will be under `total_net_charge`:
+### Void shipping
 
 ```ruby
-$ rates.first.total_net_charge => '8.76' # all monetary values are CAD
+response = canada_post_service.void_shipping(shipping_id, mobo = optional)
+Error: {
+  status: false,
+  error: 'void shipping error'
+}
 ```
 
 This is still a work in progress but feel free to contribute if it will benefit you!
