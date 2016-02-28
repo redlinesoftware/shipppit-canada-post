@@ -70,7 +70,7 @@ $ CanadaPost::Request::Rate::SERVICE_CODES
 $ => ["DOM.RP", "DOM.EP", "DOM.XP", "DOM.XP.CERT", "DOM.PC.CERT", "DOM.PC", "DOM.DT", "DOM.LIB", "USA.EP", "USA.PW.ENV", "USA.PW.PAK", "USA.PW.PARCEL", "USA.SP.AIR", "USA.TP", "USA.TP.LVM", "USA.XP", "INT.XP", "INT.IP.AIR", "INT.IP.SURF", "INT.PW.ENV", "INT.PW.PAK", "INT.PW.PARCEL", "INT.SP.AIR", "INT.SP.SURF", "INT.TP"]
 ```
 
-## Get Rates:
+### Get Rates:
 
 ```ruby
 $ rates = canada_post_service.rate( shipper: shipper,
@@ -111,7 +111,7 @@ $ [
 ```
 
 
-## Create Shipping
+### Create Shipping
 
 ```ruby
 sender = {
@@ -163,7 +163,7 @@ settlement_info = {
   contract_id: 2514533 // 2514533 for sendbox mode
 }
 
-CANADA_POST_SERVICE.create(
+canada_post_service.create(
   sender: sender,
   destination: destination,
   package: package,
@@ -190,12 +190,13 @@ Error Code:
 }
 ```
 
-## Create shipping mail behind of
-```ruby
-Pass aditional params with create shipping is merchant information for mail behind of, 
-You can find marchant information after register a merchant into your application. 
+### Create shipping on behalf of
 
-CANADA_POST_SERVICE.create(
+```ruby
+Pass additional information to create shipment on behalf of merchant.
+Merchant information can be retrieved after registering merchant in your platform.
+
+canada_post_service.create(
   mobo: {
      username: 'xxx',
      password: 'password',
@@ -205,81 +206,84 @@ CANADA_POST_SERVICE.create(
 )
 ```
 
-##Merchant registration 
+### Merchant registration
 
-Get token, You need your application token for a merchant registration.
+Use this call to get a unique registration token (token-id) required to launch a merchant into the Canada Post sign-up process.
+
 ```ruby
-@token = CANADA_POST_SERVICE.registration
+@token = canada_post_service.registration
 {'token-id' => '11111111111111111111111'}
 ```
-Submit registration form after gating token, Post the following field to https://www.canadapost.ca/cpotools/apps/drc/merchant
-- return-url //callback url to your application
+
+With the token-id in hand, complete the registration process by making another POST request to https://www.canadapost.ca/cpotools/apps/drc/merchant with the following fields:
+- return-url // callback url to your application
 - token-id
 - platform-id
 
-After callback you will find merchant information like username, password, customer_number, contract_number
+Canada Post service will redirect the user to the designated callback URL along with the required information to perform shipping transactions for the merchant (username, password, customer_number and contract_number).
 
 
-
-## Get shipping price
+### Get shipping price
 
 ```ruby
-response = CANADA_POST_SERVICE.get_price(shipping_id)
+response = canada_post_service.get_price(shipping_id)
 
 {
   :shipment_price=>{
-       :xmlns=>"http://www.canadapost.ca/ws/shipment-v7", :service_code=>"DOM.EP", :base_amount=>"10.21",
-       :priced_options=>
-         {
-            :priced_option=> {:option_code=>"DC", :option_price=>"0.00"}
-         },
-       :adjustments=>{
-             :adjustment=>{
-                 :adjustment_code=>"FUELSC", :adjustment_amount=>"0.43"
-             }
-       },
-      :pre_tax_amount=>"10.64", :gst_amount=>"0.53", :pst_amount=>"0.00", :hst_amount=>"0.00", :due_amount=>"11.17", :service_standard=>{
-             :am_delivery=>"false", :guaranteed_delivery=>"true", :expected_transmit_time=>"1", :expected_delivery_date=>"2016-01-14"
-      }, :rated_weight=>"2.000"
-   }
+    :xmlns=>"http://www.canadapost.ca/ws/shipment-v7", :service_code=>"DOM.EP", :base_amount=>"10.21",
+    :priced_options=>{
+      :priced_option=> {:option_code=>"DC", :option_price=>"0.00"}
+    },
+    :adjustments=>{
+      :adjustment=>{
+        :adjustment_code=>"FUELSC", :adjustment_amount=>"0.43"
+      }
+    },
+    :pre_tax_amount=>"10.64", :gst_amount=>"0.53", :pst_amount=>"0.00", :hst_amount=>"0.00", :due_amount=>"11.17", :service_standard=>{
+      :am_delivery=>"false", :guaranteed_delivery=>"true", :expected_transmit_time=>"1", :expected_delivery_date=>"2016-01-14"
+    },
+    :rated_weight=>"2.000"
+  }
 }
 ```
 
-## Get shipping details
+### Get shipping details
 
 ```ruby
-response = CANADA_POST_SERVICE.details(shipping_id)
+response = canada_post_service.details(shipping_id)
 
 {:shipment_details=>{:xmlns=>"http://www.canadapost.ca/ws/shipment-v7", :shipment_status=>"created", :final_shipping_point=>"M5X1C0", :shipping_point_id=>"7100", :tracking_pin=>"123456789012", :shipment_detail=>{:group_id=>"5241556", :expected_mailing_date=>"2016-01-13", :delivery_spec=>{:service_code=>"DOM.EP", :sender=>{:name=>"John Doe", :company=>"Apple", :contact_phone=>"343434", :address_details=>{:address_line_1=>"600 blvd Alexandre Taché", :city=>"Gatineau", :prov_state=>"QC", :country_code=>"CA", :postal_zip_code=>"M5X1B8"}}, :destination=>{:name=>"receiver", :company=>"receiver company", :address_details=>{:address_line_1=>"4394 Rue Saint-Denis", :city=>"Montréal", :prov_state=>"QC", :country_code=>"CA", :postal_zip_code=>"H2J2L1"}}, :options=>{:option=>{:option_code=>"DC"}}, :parcel_characteristics=>{:weight=>"2.000", :dimensions=>{:length=>"2.0", :width=>"2.0", :height=>"2.0"}, :unpackaged=>"false", :mailing_tube=>"false", :oversized=>"false"}, :notification=>{:email=>"user@gmail.com", :on_shipment=>"true", :on_exception=>"false", :on_delivery=>"true"}, :print_preferences=>{:output_format=>"8.5x11", :encoding=>"PDF"}, :preferences=>{:show_packing_instructions=>"true", :show_postage_rate=>"false", :show_insured_value=>"true"}, :settlement_info=>{:paid_by_customer=>"0002004381", :contract_id=>"0042708517", :intended_method_of_payment=>"Account"}}}}}
 
 ```
 
-## Get shipping label
+### Get shipping label
+
 ```ruby
-CANADA_POST_SERVICE.get_label(label_url)
+canada_post_service.get_label(label_url)
 ```
 this return a pdf response with label details.
 
-## Get manifest
+### Get manifest
+
 ```ruby
-response = CANADA_POST_SERVICE.get_manifest(manifest_url)
+response = canada_post_service.get_manifest(manifest_url)
 
 {:manifest=>{:xmlns=>"http://www.canadapost.ca/ws/manifest-v7", :po_number=>"P123456789", :links=>{:link=>[{:rel=>"self", :href=>"https://ct.soa-gw.canadapost.ca/rs/0002004381/0002004381/manifest/96011452532284803", :media_type=>"application/vnd.cpc.manifest-v7+xml"}, {:rel=>"details", :href=>"https://ct.soa-gw.canadapost.ca/rs/0002004381/0002004381/manifest/96011452532284803/details", :media_type=>"application/vnd.cpc.manifest-v7+xml"}, {:rel=>"manifestShipments", :href=>"https://ct.soa-gw.canadapost.ca/rs/0002004381/0002004381/shipment?manifestId=96011452532284803", :media_type=>"application/vnd.cpc.shipment-v7+xml"}, {:rel=>"artifact", :href=>"https://ct.soa-gw.canadapost.ca/ers/artifact/6e93d53968881714/400811/0", :media_type=>"application/pdf"}]}}}
 ```
 
-## Get artifact
+### Get artifact
 ```ruby
-response = CANADA_POST_SERVICE.get_artifact(artifact_url)
+response = canada_post_service.get_artifact(artifact_url)
 Response:
 {
-   status: true,
-   artifact: artifact // pdf response
+  status: true,
+  artifact: artifact // pdf response
 }
 
 Error:
 {
-   status: false,
-   error: 'artifact error message'
+  status: false,
+  error: 'artifact error message'
 }
 ```
 

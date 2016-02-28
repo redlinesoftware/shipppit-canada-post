@@ -26,7 +26,7 @@ module CanadaPost
     end
 
     def get_merchant_info(token)
-      Request::Registration.new(@credentials).marchant_info(token)
+      Request::Registration.new(@credentials).merchant_info(token)
     end
 
     def get_artifact(url)

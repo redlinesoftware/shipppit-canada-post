@@ -76,7 +76,7 @@ describe CanadaPost::Shipment do
 
     end
 
-    context "Create shipping mail behind of", :vcr do
+    context "Create shipping on behalf of", :vcr do
       let(:shipping) {
         canada_post_service.create(sender: sender,
                                    destination: destination,
