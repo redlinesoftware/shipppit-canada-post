@@ -4,8 +4,8 @@ module CanadaPost
 
       attr_accessor :phone, :destination, :group_id
 
-      def initialize(credential, options={})
-        @credentials = credential
+      def initialize(credentials, options={})
+        @credentials = credentials
         if options.present?
           @phone = options[:phone]
           @destination = options[:destination]
