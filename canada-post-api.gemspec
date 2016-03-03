@@ -4,7 +4,7 @@ $LOAD_PATH.unshift(lib) unless $LOAD_PATH.include?(lib)
 require 'canada_post/version'
 
 Gem::Specification.new do |spec|
-  spec.name          = "canada-post-api"
+  spec.name          = "shipppit-canada-post"
   spec.version       = CanadaPost::VERSION
   spec.authors       = ["Olivier"]
   spec.email         = ["olivier@yafoy.com"]

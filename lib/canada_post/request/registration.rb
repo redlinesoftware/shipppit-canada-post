@@ -1,6 +1,7 @@
 module CanadaPost
   module Request
     class Registration < Base
+
       def initialize(credentials)
         @credentials = credentials
         super(credentials)

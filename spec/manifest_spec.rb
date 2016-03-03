@@ -24,9 +24,11 @@ describe CanadaPost::Request::Manifest do
 
     context 'shipping manifest', :vcr do
       let(:manifest) {
-        canada_post_service.manifest(destination: destination,
-                                     phone: phone[:value],
-                                     group_id: group_id[:value])
+        canada_post_service.manifest(
+          destination: destination,
+          phone: phone[:value],
+          group_id: group_id[:value]
+        )
       }
 
       it 'Should return empty result' do
