@@ -11,7 +11,7 @@ module CanadaPost
           @destination = options[:destination]
           @group_id = options[:group_id]
         end
-        super(credential)
+        super(credentials)
       end
 
       def process_request
