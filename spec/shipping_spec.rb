@@ -27,24 +27,29 @@ describe CanadaPost::Shipment do
     let(:mailing_date) { {value: "#{Date.today + 5}"} }
     let(:service_code) { {value: 'DOM.EP'} }
     let(:contract_number) { {value: '42708517'} }
-    let(:mobo) { {
+    let(:mobo) {
+      {
         username: 'xxx',
         password: 'password',
         customer_number: '123456789',
-        contract_number: '987654321'}
+        contract_number: '987654321'
+      }
     }
 
     context 'create shipment', :vcr do
       let(:shipping) {
-        canada_post_service.create(sender: sender,
-                                   destination: destination,
-                                   package: package,
-                                   notification: notification,
-                                   preferences: preferences,
-                                   group_id: group_id[:value],
-                                   mailing_date: mailing_date[:value],
-                                   service_code: service_code[:value],
-                                   contract_number: contract_number[:value]) }
+        canada_post_service.create(
+          sender: sender,
+          destination: destination,
+          package: package,
+          notification: notification,
+          preferences: preferences,
+          group_id: group_id[:value],
+          mailing_date: mailing_date[:value],
+          service_code: service_code[:value],
+          contract_number: contract_number[:value]
+        )
+      }
 
       it 'Should create a shipping' do
         expect(shipping[:create_shipping][:errors]).to be_nil
@@ -92,18 +97,20 @@ describe CanadaPost::Shipment do
 
     end
 
-    context "Create shipping on behalf of", :vcr do
+    context "Create MOBO shipping (on behalf of)", :vcr do
       let(:shipping) {
-        canada_post_service.create(sender: sender,
-                                   destination: destination,
-                                   package: package,
-                                   mobo: mobo,
-                                   notification: notification,
-                                   preferences: preferences,
-                                   group_id: group_id[:value],
-                                   mailing_date: mailing_date[:value],
-                                   service_code: service_code[:value],
-                                   contract_number: contract_number[:value])
+        canada_post_service.create(
+          sender: sender,
+          destination: destination,
+          package: package,
+          mobo: mobo,
+          notification: notification,
+          preferences: preferences,
+          group_id: group_id[:value],
+          mailing_date: mailing_date[:value],
+          service_code: service_code[:value],
+          contract_number: contract_number[:value]
+        )
       }
 
       let(:get_shipment) {
@@ -114,15 +121,15 @@ describe CanadaPost::Shipment do
         expect(shipping[:create_shipping][:errors]).to be_nil
       end
 
-      it 'Should get a mobo shipping id' do
+      it 'Should get a MOBO shipping id' do
         expect(shipping[:create_shipping][:shipment_info][:shipment_id]).not_to be_nil
       end
 
-      it 'Should transmit mobo shipping' do
+      it 'Should transmit MOBO shipping' do
         expect(shipping[:transmit_shipping][:errors]).to be_nil
       end
 
-      it 'Should get mobo shipping details' do
+      it 'Should get MOBO shipping details' do
         expect(get_shipment[:shipment_details]).not_to be_nil
       end
     end
