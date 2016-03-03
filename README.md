@@ -12,7 +12,7 @@ For more info see the [Official Canada Post Developer Docs](https://www.canadapo
 Add this line to your application's Gemfile:
 
 ```ruby
-gem 'canada-post-api', github: 'shipppit/shipppit-canada-post'
+gem 'shipppit-canada-post'
 ```
 
 And then execute:
@@ -21,7 +21,7 @@ And then execute:
 
 Or install it yourself as:
 
-    $ gem install canada-post-api
+    $ gem install shipppit-canada-post
 
 ## Usage
 
@@ -304,7 +304,7 @@ This is still a work in progress but feel free to contribute if it will benefit 
 
 ## Contributing
 
-1. Fork it ( https://github.com/[my-github-username]/canada-post-api/fork )
+1. Fork it ( https://github.com/shipppit/shipppit-canada-post/fork )
 2. Create your feature branch (`git checkout -b my-new-feature`)
 3. Commit your changes (`git commit -am 'Add some feature'`)
 4. Run test suite `bundle exec rspec spec`
