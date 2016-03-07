@@ -214,7 +214,7 @@ canada_post_service.create(
 Use this call to get a unique registration token (token-id) required to launch a merchant into the Canada Post sign-up process.
 
 ```ruby
-@token = canada_post_service.registration
+@token = canada_post_service.registration_token
 {'token-id' => '11111111111111111111111'}
 ```
 

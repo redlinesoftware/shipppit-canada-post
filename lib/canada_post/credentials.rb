@@ -9,7 +9,7 @@ module CanadaPost
       @username         = options[:username]
       @password         = options[:password]
       @customer_number  = options[:customer_number]
-      @mode             = options[:mode] || "development"
+      @mode             = options[:mode] || 'development'
     end
 
   end

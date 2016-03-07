@@ -91,7 +91,6 @@ module CanadaPost
             headers: shipping_header,
             basic_auth: @authorization
         )
-        puts api_response
         process_response(api_response)
       end
 
