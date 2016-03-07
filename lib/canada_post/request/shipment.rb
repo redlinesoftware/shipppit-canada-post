@@ -10,7 +10,7 @@ module CanadaPost
           rate_reply_details = response[:price_quotes][:price_quote] || []
           rate_reply_details = [rate_reply_details] if rate_reply_details.is_a? Hash
           rate_reply_details.map do |rate_reply|
-            CanadaPost::Shipment.new(rate_reply)
+            CanadaPost::Client.new(rate_reply)
           end
         else
           error_message = if response[:messages]
@@ -24,7 +24,7 @@ module CanadaPost
 
       private
 
-      def shipment_headers
+      def shipment_url
         api_url += "rs/{mailed by customer}/{mobo}/shipment"
       end
 
