@@ -201,10 +201,10 @@ Merchant information can be retrieved after registering merchant in your platfor
 
 canada_post_service.create(
   mobo: {
-     username: 'xxx',
-     password: 'password',
-     customer_number: '123456789',
-     contract_number: '987654321'
+    username: 'xxx',
+    password: 'password',
+    customer_number: '123456789',
+    contract_number: '987654321'
   }
 )
 ```
