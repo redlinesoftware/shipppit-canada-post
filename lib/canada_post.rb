@@ -6,7 +6,6 @@ require "canada_post/request/registration"
 require "canada_post/client"
 require "canada_post/credentials"
 require "canada_post/rate"
-require "canada_post/shipment"
 
 module CanadaPost
   # Exceptions: CandaPost::RateError

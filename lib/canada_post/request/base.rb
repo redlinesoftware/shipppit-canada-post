@@ -3,7 +3,6 @@ require 'nokogiri'
 require 'active_support/core_ext/hash'
 require 'canada_post/helpers'
 require 'canada_post/rate'
-require 'canada_post/shipment'
 
 module CanadaPost
   module Request

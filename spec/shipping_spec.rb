@@ -1,9 +1,8 @@
 require 'spec_helper'
 require 'canada_post'
-require 'canada_post/shipment'
 require 'canada_post/client'
 
-describe CanadaPost::Shipment do
+describe CanadaPost::Request::Shipping do
   context 'missing required parameters' do
     it 'does raise Rate exception' do
       expect { CanadaPost::Client.new }.to raise_error(CanadaPost::RateError)
