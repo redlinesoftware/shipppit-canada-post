@@ -99,16 +99,16 @@ describe CanadaPost::Request::Shipping do
     context "Create MOBO shipping (on behalf of)", :vcr do
       let(:shipping) {
         canada_post_service.create(
-          sender: sender,
-          destination: destination,
-          package: package,
-          mobo: mobo,
-          notification: notification,
-          preferences: preferences,
-          group_id: group_id[:value],
-          mailing_date: mailing_date[:value],
-          service_code: service_code[:value],
-          contract_number: contract_number[:value]
+            sender: sender,
+            destination: destination,
+            package: package,
+            mobo: mobo,
+            notification: notification,
+            preferences: preferences,
+            group_id: group_id[:value],
+            mailing_date: mailing_date[:value],
+            service_code: service_code[:value],
+            contract_number: contract_number[:value]
         )
       }
 
