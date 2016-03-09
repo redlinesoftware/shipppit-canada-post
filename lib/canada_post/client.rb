@@ -33,19 +33,23 @@ module CanadaPost
       Request::Registration.new(@credentials).get_token
     end
 
+    def get_merchant_info(token)
+      Request::Registration.new(@credentials).merchant_info(token)
+    end
+
     def get_artifact(url)
       manifest = Request::Manifest.new(@credentials).get_manifest(url)
       if manifest[:errors].present?
         return {
-          status: false,
-          error: manifest[:errors]
+            status: false,
+            error: manifest[:errors]
         }
       else
         artifact_link = get_artifact_link(manifest[:manifest])
         artifact = Request::Manifest.new(@credentials).get_artifact(artifact_link)
         return {
-          status: true,
-          artifact: artifact
+            status: true,
+            artifact: artifact
         }
       end
     end

@@ -1,6 +1,5 @@
 require 'spec_helper'
 require 'canada_post'
-require 'canada_post/shipment'
 require 'canada_post/client'
 
 describe CanadaPost::Request::Registration do
