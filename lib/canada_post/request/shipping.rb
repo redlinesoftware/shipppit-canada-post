@@ -37,7 +37,6 @@ module CanadaPost
           shipping_url,
           body: build_xml,
           headers: shipping_header,
-          basic_auth: @shipping_auth
         )
         shipping_response = process_response(api_response)
         shipment_response[:create_shipping] = shipping_response
@@ -58,17 +57,15 @@ module CanadaPost
         api_response = self.class.get(
           price_url,
           headers: shipping_header,
-          basic_auth: @authorization
         )
         process_response(api_response)
       end
 
       def details(shipping_id, mobo = @credentials.customer_number)
-        details_url = api_url + "/rs/#{@credentials.customer_number}/#{mobo}/shipment/#{shipping_id}/details"
+        details_url = api_url + "/vis/track/pin/#{shipping_id}/detail"
         api_response = self.class.get(
           details_url,
           headers: shipping_header,
-          basic_auth: @authorization
         )
         process_response(api_response)
       end
@@ -89,7 +86,6 @@ module CanadaPost
         api_response = self.class.delete(
             void_url,
             headers: shipping_header,
-            basic_auth: @authorization
         )
         process_response(api_response)
       end
@@ -111,9 +107,11 @@ module CanadaPost
         end
 
         def shipping_header
+          base64auth = Base64.encode64([@authorization[:username], @authorization[:password]].join(':'))
           header = {
-            'Content-type' => 'application/vnd.cpc.shipment-v7+xml',
-            'Accept' => 'application/vnd.cpc.shipment-v7+xml'
+            'Accept' => 'application/vnd.cpc.track+xml',
+            'Authorization' => "Basic #{base64auth}",
+            'Accept-language' => 'en-CA'
           }
           if @mobo.present? && @mobo[:customer_number].present?
             header['Platform-id'] = @customer_number

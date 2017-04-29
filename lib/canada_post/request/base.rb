@@ -126,11 +126,11 @@ module CanadaPost
       end
 
       def process_response(api_response)
-        shipping_response = {errors: ''}
+        shipping_response = {errors: []}
         response = parse_response(api_response)
         if response[:messages].present?
           response[:messages].each do |key, message|
-            shipping_response[:errors] << message[:description].split('}').last
+            shipping_response[:errors] << message if key == :message
           end
           return shipping_response
         end
