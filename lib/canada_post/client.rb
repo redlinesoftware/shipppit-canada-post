@@ -65,6 +65,10 @@ module CanadaPost
       end
     end
 
+    def summary(shipping_id)
+      Request::Shipping.new(@credentials).summary(shipping_id)
+    end
+
     def details(shipping_id)
       Request::Shipping.new(@credentials).details(shipping_id)
     end
