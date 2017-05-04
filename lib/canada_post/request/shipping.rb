@@ -61,6 +61,15 @@ module CanadaPost
         process_response(api_response)
       end
 
+      def summary(shipping_id, mobo = @credentials.customer_number)
+        summary_url = api_url + "/vis/track/pin/#{shipping_id}/summary"
+        api_response = self.class.get(
+          summary_url,
+          headers: shipping_header,
+        )
+        process_response(api_response)
+      end
+
       def details(shipping_id, mobo = @credentials.customer_number)
         details_url = api_url + "/vis/track/pin/#{shipping_id}/detail"
         api_response = self.class.get(
