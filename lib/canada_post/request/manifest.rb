@@ -50,8 +50,8 @@ module CanadaPost
 
       def manifest_header
         {
-          'Content-type' => 'application/vnd.cpc.manifest-v7+xml',
-          'Accept' => 'application/vnd.cpc.manifest-v7+xml'
+          'Content-type' => 'application/vnd.cpc.manifest-v8+xml',
+          'Accept' => 'application/vnd.cpc.manifest-v8+xml'
         }
       end
 
@@ -63,7 +63,7 @@ module CanadaPost
       end
 
       def build_xml
-        ns = "http://www.canadapost.ca/ws/manifest-v7"
+        ns = "http://www.canadapost.ca/ws/manifest-v8"
         xsi = 'http://www.w3.org/2001/XMLSchema-instance'
         builder = Nokogiri::XML::Builder.new do |xml|
           xml.send(:"transmit-set", :'xmlns:xsi' => xsi, xmlns: ns) {

@@ -5,10 +5,6 @@ module CanadaPost
       @credentials = Credentials.new(options)
     end
 
-    def shipment(options={})
-      Request::Shipment.new(@credentials, options).process_request
-    end
-
     def create(options = {})
       Request::Shipping.new(@credentials, options).process_request
     end

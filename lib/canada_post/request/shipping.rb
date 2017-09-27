@@ -3,11 +3,12 @@ module CanadaPost
   module Request
     class Shipping < Base
 
-      attr_accessor :sender, :destination, :package, :notification, :preferences, :settlement_info, :group_id, :mailing_date, :contract_id
+      attr_accessor :options, :sender, :destination, :package, :notification, :preferences, :settlement_info, :group_id, :mailing_date, :contract_id
 
       def initialize(credentials, options={})
         @credentials = credentials
         if options.present?
+          @options = options
           @sender = options[:sender]
           @destination = options[:destination]
           @package = options[:package]
@@ -65,7 +66,7 @@ module CanadaPost
         summary_url = api_url + "/vis/track/pin/#{shipping_id}/summary"
         api_response = self.class.get(
           summary_url,
-          headers: shipping_header,
+          headers: shipping_header
         )
         process_response(api_response)
       end
@@ -74,7 +75,7 @@ module CanadaPost
         details_url = api_url + "/vis/track/pin/#{shipping_id}/detail"
         api_response = self.class.get(
           details_url,
-          headers: shipping_header,
+          headers: shipping_header
         )
         process_response(api_response)
       end
@@ -94,7 +95,7 @@ module CanadaPost
         void_url = api_url + "/rs/#{@credentials.customer_number}/#{mobo}/shipment/#{shipping_id}"
         api_response = self.class.delete(
             void_url,
-            headers: shipping_header,
+            headers: shipping_header
         )
         process_response(api_response)
       end
@@ -118,7 +119,8 @@ module CanadaPost
         def shipping_header
           base64auth = Base64.encode64([@authorization[:username], @authorization[:password]].join(':'))
           header = {
-            'Accept' => 'application/vnd.cpc.track+xml',
+            'Accept' => 'application/vnd.cpc.shipment-v8+xml',
+            'Content-Type' => 'application/vnd.cpc.shipment-v8+xml',
             'Authorization' => "Basic #{base64auth}",
             'Accept-language' => 'en-CA'
           }
@@ -129,13 +131,13 @@ module CanadaPost
         end
 
         def build_xml
-          ns = "http://www.canadapost.ca/ws/shipment-v7"
-          builder = Nokogiri::XML::Builder.new do |xml|
+          ns = "http://www.canadapost.ca/ws/shipment-v8"
+          builder = Nokogiri::XML::Builder.new(encoding: 'UTF-8') do |xml|
             xml.send(:"shipment", xmlns: ns) {
               add_shipment_params(xml)
             }
           end
-          builder.doc.root.to_xml
+          builder.to_xml
         end
 
         def add_shipment_params(xml)
@@ -165,7 +167,7 @@ module CanadaPost
 
           add_package(xml)
           xml.send(:'print-preferences') {
-            xml.send(:'output-format', '8.5x11')
+            xml.send(:'output-format', @options.dig(:print_preferences, :output_format) || '8.5x11')
           }
 
           xml.notification {
@@ -173,7 +175,7 @@ module CanadaPost
             xml.send(:'on-shipment', @notification[:on_shipment])
             xml.send(:'on-exception', @notification[:on_exception])
             xml.send(:'on-delivery', @notification[:on_delivery])
-          }
+          } if @notification
 
           xml.preferences {
             xml.send(:'show-packing-instructions', @preferences[:show_packing_instructions])
@@ -182,8 +184,7 @@ module CanadaPost
           }
 
           xml.send(:'settlement-info') {
-            contract_id = @credentials.mode == "production" ? @contract_id : TEST_CONTRACT_ID
-            xml.send(:'contract-id', contract_id)
+            xml.send(:'contract-id', @contract_id)
             if @mobo.present? && @mobo[:customer_number].present?
               xml.send(:'paid-by-customer', @mobo_customer)
             end
@@ -203,6 +204,7 @@ module CanadaPost
         def add_destination(xml)
           xml.send(:'name', @destination[:name])
           xml.send(:'company', @destination[:company])
+          xml.send(:'client-voice-number', @destination[:phone])
           xml.send(:'address-details') {
             add_address(xml, @destination[:address_details])
           }
@@ -232,7 +234,6 @@ module CanadaPost
             end
           }
         end
-
     end
   end
 end
