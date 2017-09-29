@@ -1,88 +1,56 @@
 module CanadaPost
   module Request
     class Manifest < Base
-
       attr_accessor :phone, :destination, :group_id
 
-      def initialize(credentials, options={})
-        @credentials = credentials
+      def create(options)
         if options.present?
+          @options = options
           @phone = options[:phone]
           @destination = options[:destination]
           @group_id = options[:group_id]
         end
-        super(credentials)
-      end
 
-      def process_request
-        api_response = self.class.post(
-          api_url,
-          body: build_xml,
-          headers: manifest_header,
-          basic_auth: @authorization
-        )
-        process_response(api_response)
-      end
-
-      def get_manifest(url)
-        api_response = self.class.get(
-          url,
-          headers: manifest_header,
-          basic_auth: @authorization
-        )
-        process_response(api_response)
+        send_request :post, manifest_url, body: build_xml
       end
 
       def get_artifact(url)
-        self.class.get(
-          url,
-          headers: artifact_header,
-          basic_auth: @authorization
-        )
+        get_request url, headers: {'Accept' => 'application/pdf'}
       end
 
       private
 
-      def api_url
-        api_url = @credentials.mode == "production" ? PRODUCTION_URL : TEST_URL
-        api_url += "/rs/#{@credentials.customer_number}/#{@credentials.customer_number}/manifest"
+      def request_content_type
+        'manifest'
       end
 
-      def manifest_header
-        {
-          'Content-type' => 'application/vnd.cpc.manifest-v8+xml',
-          'Accept' => 'application/vnd.cpc.manifest-v8+xml'
-        }
-      end
-
-      def artifact_header
-        {
-          'Content-type' => 'application/pdf',
-          'Accept' => 'application/pdf'
-        }
+      def manifest_url
+        "/rs/#{@credentials.customer_number}/#{@credentials.customer_number}/manifest"
       end
 
       def build_xml
-        ns = "http://www.canadapost.ca/ws/manifest-v8"
-        xsi = 'http://www.w3.org/2001/XMLSchema-instance'
-        builder = Nokogiri::XML::Builder.new do |xml|
-          xml.send(:"transmit-set", :'xmlns:xsi' => xsi, xmlns: ns) {
-            xml.send(:'group-ids') {
-              xml.send(:'group-id', @group_id)
-            }
-            xml.send(:'detailed-manifests', true)
-            xml.send(:'method-of-payment', 'Account')
-            xml.send(:'manifest-address') {
-              add_manifest_details(xml)
-            }
+        build :'transmit-set' do |xml|
+          if @options[:shipping_point_id]
+            xml.send(:'shipping-point-id', @options[:shipping_point_id])
+          else
+            rsp = @destination[:address_details][:postal_code].gsub(' ', '')
+            xml.send(:'cpc-pickup-indicator', true)
+            xml.send(:'requested-shipping-point', rsp)
+          end
+          xml.send(:'group-ids') {
+            xml.send(:'group-id', @group_id)
+          }
+          xml.send(:'detailed-manifests', true)
+          xml.send(:'method-of-payment', 'Account')
+          xml.send(:'manifest-address') {
+            add_manifest_details(xml)
           }
         end
-        builder.doc.root.to_xml
       end
 
       def add_manifest_details(xml)
         xml.send(:'manifest-company', @destination[:company])
-        xml.send(:'manifest-name', @destination[:name])
+        xml.send(:'manifest-name', @destination[:name]) if @destination[:name]
         xml.send(:'phone-number', @phone)
         xml.send(:'address-details') {
           manifest_address(xml, @destination[:address_details])
@@ -97,7 +65,6 @@ module CanadaPost
           xml.send(:'postal-zip-code', params[:postal_code].gsub(' ', ''))
         end
       end
-
     end
   end
 end

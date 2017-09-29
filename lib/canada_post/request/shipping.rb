@@ -5,8 +5,18 @@ module CanadaPost
 
       attr_accessor :options, :sender, :destination, :package, :notification, :preferences, :settlement_info, :group_id, :mailing_date, :contract_id
 
-      def initialize(credentials, options={})
-        @credentials = credentials
+      def initialize(credentials, options = {})
+        super
+        @mobo_customer = @credentials.customer_number
+      end
+
+      def create(options)
+        @mobo = options[:mobo]
+        if @mobo.present? && @mobo[:customer_number].present?
+          @mobo_customer = @mobo[:customer_number]
+          @authorization = {username: @mobo[:username], password: @mobo[:password]}
+        end
+
         if options.present?
           @options = options
           @sender = options[:sender]
@@ -16,128 +26,56 @@ module CanadaPost
           @preferences = options[:preferences]
           @settlement_info = options[:settlement_info]
           @group_id = options[:group_id]
-          @mobo = options[:mobo]
-          if @mobo.present? && @mobo[:customer_number].present?
-            @mobo_customer = @mobo[:customer_number]
-            @shipping_auth = {username: @mobo[:username], password: @mobo[:password]}
-          else
-            @mobo_customer = @credentials.customer_number
-            @shipping_auth = {username: credentials.username, password: credentials.password}
-          end
-          @customer_number = @credentials.customer_number
           @mailing_date = options[:mailing_date]
           @contract_id = options[:contract_id]
           @service_code = options[:service_code]
         end
-        super(credentials)
+
+        send_request :post, shipping_url, body: build_xml
       end
 
-      def process_request
-        shipment_response = Hash.new
-        api_response = self.class.post(
-          shipping_url,
-          body: build_xml,
-          headers: shipping_header,
-        )
-        shipping_response = process_response(api_response)
-        shipment_response[:create_shipping] = shipping_response
-        unless shipping_response[:errors].present?
-          manifest_params = {
-            destination: @destination,
-            phone: @sender[:phone],
-            group_id: @group_id
-          }
-          manifest_response = CanadaPost::Request::Manifest.new(@credentials, manifest_params).process_request
-          shipment_response[:transmit_shipping] = manifest_response
-        end
-        shipment_response
+      def get_shipment(shipping_id)
+        get_request shipping_url + "/#{shipping_id}"
       end
 
-      def get_price(shipping_id, mobo = @credentials.customer_number)
-        price_url = api_url + "/rs/#{@credentials.customer_number}/#{mobo}/shipment/#{shipping_id}/price"
-        api_response = self.class.get(
-          price_url,
-          headers: shipping_header,
-        )
-        process_response(api_response)
-      end
-
-      def summary(shipping_id, mobo = @credentials.customer_number)
-        summary_url = api_url + "/vis/track/pin/#{shipping_id}/summary"
-        api_response = self.class.get(
-          summary_url,
-          headers: shipping_header
-        )
-        process_response(api_response)
-      end
-
-      def details(shipping_id, mobo = @credentials.customer_number)
-        details_url = api_url + "/vis/track/pin/#{shipping_id}/detail"
-        api_response = self.class.get(
-          details_url,
-          headers: shipping_header
-        )
-        process_response(api_response)
+      def get_price(shipping_id)
+        get_request shipping_url + "/#{shipping_id}/price"
       end
 
       def get_label(label_url)
-        self.class.get(
-          label_url,
-          headers: {
-            'Content-type' => 'application/pdf',
-            'Accept' => 'application/pdf'
-          },
-          basic_auth: @authorization
-        )
+        send_request :get, label_url, headers: {'Accept' => 'application/pdf'}
       end
 
-      def void_shipping(shipping_id, mobo = @credentials.customer_number)
-        void_url = api_url + "/rs/#{@credentials.customer_number}/#{mobo}/shipment/#{shipping_id}"
-        api_response = self.class.delete(
-            void_url,
-            headers: shipping_header
-        )
-        process_response(api_response)
+      def void(shipping_id)
+        send_request :delete, shipping_url + "/#{shipping_id}"
+      end
+
+      def refund(shipping_id, email)
+        refund_url = shipping_url + "/#{shipping_id}/refund"
+        body = build(:"shipment-refund-request") do |xml|
+          xml.email_ email
+        end
+        send_request :post, refund_url, body: body
       end
 
       private
 
-        def api_url
-          @credentials.mode == "production" ? PRODUCTION_URL : TEST_URL
-        end
-
         def shipping_url
-          base_url = api_url
-          if @mobo.present? && @mobo[:customer_number].present?
-            base_url += "/rs/#{@mobo_customer}-#{@customer_number}/#{@mobo_customer}/shipment"
-          else
-            base_url += "/rs/#{@customer_number}/#{@customer_number}/shipment"
-          end
-          base_url
+          "/#{request_content_type}"
         end
 
-        def shipping_header
-          base64auth = Base64.encode64([@authorization[:username], @authorization[:password]].join(':'))
-          header = {
-            'Accept' => 'application/vnd.cpc.shipment-v8+xml',
-            'Content-Type' => 'application/vnd.cpc.shipment-v8+xml',
-            'Authorization' => "Basic #{base64auth}",
-            'Accept-language' => 'en-CA'
-          }
-          if @mobo.present? && @mobo[:customer_number].present?
-            header['Platform-id'] = @customer_number
-          end
-          header
+        def base_url
+          "/rs/#{@credentials.customer_number}/#{@mobo_customer}"
+        end
+
+        def request_content_type
+          'shipment'
         end
 
         def build_xml
-          ns = "http://www.canadapost.ca/ws/shipment-v8"
-          builder = Nokogiri::XML::Builder.new(encoding: 'UTF-8') do |xml|
-            xml.send(:"shipment", xmlns: ns) {
-              add_shipment_params(xml)
-            }
+          build :"shipment" do |xml|
+            add_shipment_params(xml)
           end
-          builder.to_xml
         end
 
         def add_shipment_params(xml)
@@ -147,12 +85,22 @@ module CanadaPost
           if @mailing_date.present?
             xml.send(:'expected-mailing-date', @mailing_date)
           end
-          sender_zip = @sender[:address_details][:postal_code].present? ? @sender[:address_details][:postal_code].gsub(' ', '') : ''
-          rsp = @sender[:shipping_point].present? ? @sender[:shipping_point].gsub(' ', '') : sender_zip
-          xml.send(:'requested-shipping-point', rsp)
+          if @options[:shipping_point_id]
+            xml.send(:'shipping-point-id', @options[:shipping_point_id])
+          else
+            rsp = @sender[:address_details][:postal_code].gsub(' ', '')
+            xml.send(:'cpc-pickup-indicator', true)
+            xml.send(:'requested-shipping-point', rsp)
+          end
           xml.send(:'delivery-spec') {
             add_delivery_spec(xml)
           }
+          xml.send(:'return-spec') {
+            xml.send(:'service-code', @service_code)
+            xml.send(:'return-recipient') {
+              add_sender xml, return_spec: true
+            }
+          } if @options[:return_label]
         end
 
         def add_delivery_spec(xml)
@@ -192,12 +140,12 @@ module CanadaPost
           }
         end
 
-        def add_sender(xml)
+        def add_sender(xml, return_spec: false)
           xml.send(:'name', @sender[:name])
           xml.send(:'company', @sender[:company])
-          xml.send(:'contact-phone', @sender[:phone])
+          xml.send(:'contact-phone', @sender[:phone]) unless return_spec
           xml.send(:'address-details') {
-            add_address(xml, @sender[:address_details])
+            add_address(xml, @sender[:address_details], include_country: !return_spec)
           }
         end
 
@@ -210,11 +158,11 @@ module CanadaPost
           }
         end
 
-        def add_address(xml, params)
+        def add_address(xml, params, include_country: true)
           xml.send(:'address-line-1', params[:address])
           xml.send(:'city', params[:city])
           xml.send(:'prov-state', params[:state])
-          xml.send(:'country-code', params[:country])
+          xml.send(:'country-code', params[:country]) if include_country
           if params[:postal_code].present?
             xml.send(:'postal-zip-code', params[:postal_code].gsub(' ', ''))
           end

@@ -5,24 +5,16 @@ module CanadaPost
       @credentials = Credentials.new(options)
     end
 
-    def create(options = {})
-      Request::Shipping.new(@credentials, options).process_request
+    def shipping
+      Request::Shipping.new(@credentials)
     end
 
-    def get_price(shipping_id, mobo = @credentials.customer_number)
-      Request::Shipping.new(@credentials).get_price(shipping_id, mobo)
+    def manifest
+      Request::Manifest.new(@credentials)
     end
 
-    def get_label(label_url)
-      Request::Shipping.new(@credentials).get_label(label_url)
-    end
-
-    def void_shipment(shipping_id, mobo = @credentials.customer_number)
-      Request::Shipping.new(@credentials).void_shipping(shipping_id, mobo)
-    end
-
-    def manifest(options={})
-      Request::Manifest.new(@credentials, options).process_request
+    def tracking
+      Request::Tracking.new(@credentials)
     end
 
     def registration_token
@@ -34,7 +26,7 @@ module CanadaPost
     end
 
     def get_artifact(url)
-      manifest = Request::Manifest.new(@credentials).get_manifest(url)
+      manifest = manifest.get_request(url)
       if manifest[:errors].present?
         return {
             status: false,
@@ -61,17 +53,8 @@ module CanadaPost
       end
     end
 
-    def summary(shipping_id)
-      Request::Shipping.new(@credentials).summary(shipping_id)
-    end
-
-    def details(shipping_id)
-      Request::Shipping.new(@credentials).details(shipping_id)
-    end
-
     def rate(options={})
       Request::Rate.new(@credentials, options).process_request
     end
-
   end
 end

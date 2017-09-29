@@ -116,7 +116,6 @@ module CanadaPost
       def success?(response)
         response[:price_quotes]
       end
-
     end
   end
 end

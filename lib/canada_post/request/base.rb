@@ -88,14 +88,6 @@ module CanadaPost
         @customer_number = @credentials.customer_number
       end
 
-      # def initialize(credentials, options={})
-      #   requires!(options, :shipper, :recipient, :package)
-      #   @credentials = credentials
-      #   @shipper, @recipient, @package, @service_type = options[:shipper], options[:recipient], options[:package], options[:service_type]
-      #   @authorization = { username: @credentials.username, password: @credentials.password }
-      #   @customer_number = @credentials.customer_number
-      # end
-
       def process_request
         raise NotImplementedError, "Override #process_request in subclass"
       end
@@ -115,8 +107,47 @@ module CanadaPost
         @credentials.mode == "production" ? PRODUCTION_URL : TEST_URL
       end
 
+      def build(root)
+        Nokogiri::XML::Builder.new(encoding: 'UTF-8') do |xml|
+          xml.send(root, xmlns: "http://www.canadapost.ca/ws/#{request_content_type}-v8") {
+            yield xml
+          }
+        end.to_xml
+      end
+
       def build_xml
         raise NotImplementedError, "Override #build_xml in subclass"
+      end
+
+      def base_url
+        ''
+      end
+
+      def request_content_type
+        raise NotImplementedError, "Override #request_content_type in subclass"
+      end
+
+      def get_request(url)
+        send_request :get, url
+      end
+
+      def send_request(type = :get, url, headers: {}, body: nil)
+        request_headers = {'Accept' => "application/vnd.cpc.#{request_content_type}-v8+xml", 'Accept-language' => 'en-CA'}.update headers
+        request_headers.update 'Content-Type' => request_headers['Accept'] if type == :post
+
+        request_options = {
+          headers: request_headers,
+          basic_auth: @authorization
+        }
+        request_options.update body: body if body
+
+        # determine if a full url has been provided or a relative url
+        request_url = url.match('^https:') ? url : api_url + base_url + url
+
+        api_response = self.class.send type, request_url, request_options
+
+        # return the raw response if 'Accept' is blank
+        headers['Accept'].blank? ? process_response(api_response) : api_response
       end
 
       # Parse response, convert keys to underscore symbols
@@ -148,7 +179,6 @@ module CanadaPost
           response
         end
       end
-
     end
   end
 end
