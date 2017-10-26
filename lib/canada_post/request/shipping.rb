@@ -1,4 +1,3 @@
-require 'canada_post/request/manifest'
 module CanadaPost
   module Request
     class Shipping < Base
@@ -72,6 +71,10 @@ module CanadaPost
           'shipment'
         end
 
+        def api_version
+          'v8'
+        end
+
         def build_xml
           build :"shipment" do |xml|
             add_shipment_params(xml)
@@ -132,16 +135,16 @@ module CanadaPost
           }
 
           xml.send(:'settlement-info') {
-            xml.send(:'contract-id', @contract_id)
             if @mobo.present? && @mobo[:customer_number].present?
               xml.send(:'paid-by-customer', @mobo_customer)
             end
-            xml.send(:'intended-method-of-payment', 'Account')
+            xml.send(:'contract-id', @contract_id)
+            xml.send(:'intended-method-of-payment', @options[:method_of_payment] || 'Account')
           }
         end
 
         def add_sender(xml, return_spec: false)
-          xml.send(:'name', @sender[:name])
+          xml.send(:'name', @sender[:name]) if @sender[:name]
           xml.send(:'company', @sender[:company])
           xml.send(:'contact-phone', @sender[:phone]) unless return_spec
           xml.send(:'address-details') {
@@ -151,7 +154,7 @@ module CanadaPost
 
         def add_destination(xml)
           xml.send(:'name', @destination[:name])
-          xml.send(:'company', @destination[:company])
+          xml.send(:'company', @destination[:company]) if @destination[:company]
           xml.send(:'client-voice-number', @destination[:phone])
           xml.send(:'address-details') {
             add_address(xml, @destination[:address_details])

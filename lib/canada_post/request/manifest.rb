@@ -24,6 +24,10 @@ module CanadaPost
         'manifest'
       end
 
+      def api_version
+        'v8'
+      end
+
       def manifest_url
         "/rs/#{@credentials.customer_number}/#{@credentials.customer_number}/manifest"
       end

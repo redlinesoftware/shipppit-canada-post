@@ -109,7 +109,7 @@ module CanadaPost
 
       def build(root)
         Nokogiri::XML::Builder.new(encoding: 'UTF-8') do |xml|
-          xml.send(root, xmlns: "http://www.canadapost.ca/ws/#{request_content_type}-v8") {
+          xml.send(root, xmlns: "http://www.canadapost.ca/ws/#{versioned_content_type}") {
             yield xml
           }
         end.to_xml
@@ -123,6 +123,10 @@ module CanadaPost
         ''
       end
 
+      def api_version
+        nil
+      end
+
       def request_content_type
         raise NotImplementedError, "Override #request_content_type in subclass"
       end
@@ -132,7 +136,7 @@ module CanadaPost
       end
 
       def send_request(type = :get, url, headers: {}, body: nil)
-        request_headers = {'Accept' => "application/vnd.cpc.#{request_content_type}-v8+xml", 'Accept-language' => 'en-CA'}.update headers
+        request_headers = {'Accept' => "application/vnd.cpc.#{versioned_content_type}+xml", 'Accept-language' => 'en-CA'}.update headers
         request_headers.update 'Content-Type' => request_headers['Accept'] if type == :post
 
         request_options = {
@@ -169,6 +173,8 @@ module CanadaPost
         return response
       end
 
+      private
+
       # Recursively sanitizes the response object by cleaning up any hash keys.
       def sanitize_response_keys(response)
         if response.is_a?(Hash)
@@ -179,6 +185,11 @@ module CanadaPost
           response
         end
       end
+
+      def versioned_content_type
+        [request_content_type, api_version].compact.join('-')
+      end
+
     end
   end
 end

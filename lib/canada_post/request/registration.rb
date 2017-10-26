@@ -1,12 +1,6 @@
 module CanadaPost
   module Request
     class Registration < Base
-
-      def initialize(credentials)
-        @credentials = credentials
-        super(credentials)
-      end
-
       def get_token
         api_response = self.class.post(
           api_url,

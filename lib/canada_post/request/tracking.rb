@@ -1,5 +1,3 @@
-require 'canada_post/request/manifest'
-
 module CanadaPost
   module Request
     class Tracking < Base
