@@ -1,6 +1,5 @@
 module CanadaPost
   class Client
-
     def initialize(options={})
       @credentials = Credentials.new(options)
     end

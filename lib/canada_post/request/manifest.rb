@@ -45,7 +45,7 @@ module CanadaPost
             xml.send(:'group-id', @group_id)
           }
           xml.send(:'detailed-manifests', true)
-          xml.send(:'method-of-payment', 'Account')
+          xml.send(:'method-of-payment', @options[:method_of_payment] || 'Account')
           xml.send(:'manifest-address') {
             add_manifest_details(xml)
           }
