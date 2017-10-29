@@ -16,6 +16,10 @@ module CanadaPost
       Request::Tracking.new(@credentials)
     end
 
+    def pickup
+      Request::Pickup.new(@credentials)
+    end
+
     def registration_token
       Request::Registration.new(@credentials).get_token
     end
