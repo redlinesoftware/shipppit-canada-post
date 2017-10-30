@@ -178,7 +178,7 @@ module CanadaPost
       # Recursively sanitizes the response object by cleaning up any hash keys.
       def sanitize_response_keys(response)
         if response.is_a?(Hash)
-          response.deep_symbolize_keys
+          response.inject({}) { |result, (key, value)| result[underscorize(key).to_sym] = sanitize_response_keys(value); result }
         elsif response.is_a?(Array)
           response.collect { |result| sanitize_response_keys(result) }
         else
