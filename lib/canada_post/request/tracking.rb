@@ -5,7 +5,7 @@ module CanadaPost
         get_request "/#{tracking_id}/summary"
       end
 
-      def details(shipping_id)
+      def details(tracking_id)
         get_request "/#{tracking_id}/detail"
       end
 
