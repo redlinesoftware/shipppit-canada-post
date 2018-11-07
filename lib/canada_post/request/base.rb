@@ -135,7 +135,7 @@ module CanadaPost
         send_request :get, url
       end
 
-      def send_request(type = :get, url, headers: {}, body: nil)
+      def send_request(type, url, headers: {}, body: nil)
         request_headers = {'Accept' => "application/vnd.cpc.#{versioned_content_type}+xml", 'Accept-language' => 'en-CA'}.update headers
         request_headers.update 'Content-Type' => request_headers['Accept'] if type == :post
 
