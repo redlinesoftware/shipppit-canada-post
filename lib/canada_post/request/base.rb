@@ -132,11 +132,16 @@ module CanadaPost
       end
 
       def get_request(url)
-        send_request :get, url
+        if url.is_a?(Hash)
+          url = url.with_indifferent_access
+          send_request :get, url[:href], media_type: url[:media_type]
+        else
+          send_request :get, url
+        end
       end
 
-      def send_request(type, url, headers: {}, body: nil)
-        request_headers = {'Accept' => "application/vnd.cpc.#{versioned_content_type}+xml", 'Accept-language' => 'en-CA'}.update headers
+      def send_request(type, url, media_type: nil, headers: {}, body: nil)
+        request_headers = {'Accept' => media_type || "application/vnd.cpc.#{versioned_content_type}+xml", 'Accept-language' => 'en-CA'}.update headers
         request_headers.update 'Content-Type' => request_headers['Accept'] if type == :post
 
         request_options = {

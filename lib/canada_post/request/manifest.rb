@@ -14,10 +14,6 @@ module CanadaPost
         send_request :post, manifest_url, body: build_xml
       end
 
-      def get_artifact(url)
-        get_request url, headers: {'Accept' => 'application/pdf'}
-      end
-
       private
 
       def request_content_type
