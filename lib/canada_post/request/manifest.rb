@@ -33,7 +33,7 @@ module CanadaPost
           if @options[:shipping_point_id]
             xml.send(:'shipping-point-id', @options[:shipping_point_id])
           else
-            rsp = @destination[:address_details][:postal_code].gsub(' ', '')
+            rsp = @destination[:address_details][:postal_code].delete(' ')
             xml.send(:'cpc-pickup-indicator', true)
             xml.send(:'requested-shipping-point', rsp)
           end
@@ -62,7 +62,7 @@ module CanadaPost
         xml.send(:'city', params[:city])
         xml.send(:'prov-state', params[:state])
         if params[:postal_code].present?
-          xml.send(:'postal-zip-code', params[:postal_code].gsub(' ', ''))
+          xml.send(:'postal-zip-code', params[:postal_code].delete(' '))
         end
       end
     end
