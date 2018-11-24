@@ -42,7 +42,7 @@ module CanadaPost
       end
 
       def get_label(label_url)
-        send_request :get, label_url, headers: {'Accept' => 'application/pdf'}
+        get_request href: label_url, media_type: 'application/pdf'
       end
 
       def void(shipping_id)

@@ -32,6 +32,8 @@ module CanadaPost
         build :'transmit-set' do |xml|
           if @options[:shipping_point_id]
             xml.send(:'shipping-point-id', @options[:shipping_point_id])
+          elsif @options[:dropoff]
+            xml.send(:'requested-shipping-point', @options[:dropoff].gsub(/\W/,''))
           else
             rsp = @destination[:address_details][:postal_code].delete(' ')
             xml.send(:'cpc-pickup-indicator', true)

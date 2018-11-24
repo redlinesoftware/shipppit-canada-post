@@ -104,7 +104,11 @@ module CanadaPost
       end
 
       def api_url
-        @credentials.mode == "production" ? PRODUCTION_URL : TEST_URL
+        production? ? PRODUCTION_URL : TEST_URL
+      end
+
+      def production?
+        @credentials.mode == "production"
       end
 
       def build(root)
@@ -152,7 +156,12 @@ module CanadaPost
         request_options.update body: body if body
 
         # determine if a full url has been provided or a relative url
-        request_url = url.match('^https:') ? url : api_url + base_url + url
+        request_url = if url.match('^https:')
+          # sub the production endpoint for the test endpoint if found in development
+          production? ? url : url.gsub(PRODUCTION_URL, TEST_URL)
+        else
+          api_url + base_url + url
+        end
 
         api_response = self.class.send type, request_url, request_options
 
