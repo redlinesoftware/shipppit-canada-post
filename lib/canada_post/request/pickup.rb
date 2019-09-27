@@ -11,6 +11,10 @@ module CanadaPost
         send_request :post, pickup_url, body: build_xml
       end
 
+      def all_requests
+        get_request pickup_url
+      end
+
       private
 
       def build_xml

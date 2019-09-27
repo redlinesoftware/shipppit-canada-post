@@ -8,7 +8,7 @@ module CanadaPost
         requires!(options, :shipper, :recipient, :package)
         @credentials = credentials
         @shipper, @recipient, @package, @service_type = options[:shipper], options[:recipient], options[:package], options[:service_type]
-        super(credentials)
+        super credentials
       end
 
       def process_request

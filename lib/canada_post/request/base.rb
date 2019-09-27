@@ -82,7 +82,7 @@ module CanadaPost
         "INT.TP" => 'Tracked Package - International'
       }
 
-      def initialize(credentials, options = {})
+      def initialize(credentials)
         @credentials = credentials
         @authorization = {username: @credentials.username, password: @credentials.password}
         @customer_number = @credentials.customer_number

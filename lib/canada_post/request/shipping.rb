@@ -4,7 +4,7 @@ module CanadaPost
 
       attr_accessor :options, :sender, :destination, :package, :notification, :preferences, :settlement_info, :group_id, :mailing_date, :contract_id
 
-      def initialize(credentials, options = {})
+      def initialize(credentials)
         super
         @mobo_customer = @credentials.customer_number
       end
@@ -96,7 +96,7 @@ module CanadaPost
             xml.send(:'requested-shipping-point', rsp)
           end
           xml.send(:'delivery-spec') {
-            add_delivery_spec(xml)
+            add_delivery_spec xml
           }
           xml.send(:'return-spec') {
             xml.send(:'service-code', @service_code)
@@ -116,23 +116,15 @@ module CanadaPost
             add_destination(xml)
           }
 
-          add_package(xml)
+          add_options xml
+          add_package xml
+
           xml.send(:'print-preferences') {
             xml.send(:'output-format', @options.dig(:print_preferences, :output_format) || '8.5x11')
           }
 
-          xml.notification {
-            xml.send(:'email', @notification[:email])
-            xml.send(:'on-shipment', @notification[:on_shipment])
-            xml.send(:'on-exception', @notification[:on_exception])
-            xml.send(:'on-delivery', @notification[:on_delivery])
-          } if @notification
-
-          xml.preferences {
-            xml.send(:'show-packing-instructions', @preferences[:show_packing_instructions])
-            xml.send(:'show-postage-rate', @preferences[:show_postage_rate])
-            xml.send(:'show-insured-value', @preferences[:show_insured_value])
-          }
+          hash_to_xml({notification: @notification}, xml) if @notification
+          hash_to_xml({preferences: @preferences}, xml)
 
           xml.send(:'settlement-info') {
             if @mobo.present? && @mobo[:customer_number].present?
@@ -141,6 +133,8 @@ module CanadaPost
             xml.send(:'contract-id', @contract_id)
             xml.send(:'intended-method-of-payment', @options[:method_of_payment] || 'Account')
           }
+
+          add_customs xml
         end
 
         def add_sender(xml, return_spec: false)
@@ -184,6 +178,22 @@ module CanadaPost
               }
             end
           }
+        end
+
+        def add_options(xml)
+          xml.options {
+            @options[:options].each do |opt|
+              xml.option {
+                hash_to_xml opt, xml
+              }
+            end
+          } if @options[:options]
+        end
+
+        def add_customs(xml)
+          xml.customs {
+            hash_to_xml @options[:customs], xml
+          } if @options[:customs]
         end
     end
   end
